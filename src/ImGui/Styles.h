@@ -95,8 +95,6 @@ namespace ImGui
 		ImU32 sliderBorderU32;
 		ImU32 sliderBorderActiveU32;
 		ImU32 iconDisabledU32;
-
-		bool refreshStyle{ false };
 	};
 
 	ImU32  GetUserStyleColorU32(USER_STYLE a_style);

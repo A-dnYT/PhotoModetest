@@ -75,7 +75,6 @@ namespace Input
 		bool          navigateWithMouse{ true };
 		bool          blockEscape{ false };
 		bool          cursorInit{ false };
-		bool          cursorShowPending{ false };
 
 		static Manager instance;
 	};

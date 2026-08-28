@@ -55,8 +55,6 @@ namespace IconFont
 		void LoadFontSettings(CSimpleIniA& a_ini);
 
 		// members
-		bool loadedFonts{ false };
-
 		std::string fontName{ "Jost-Regular.ttf" };
 		float       fontSize{ 26 };
 		float       iconSize{ 20 };
