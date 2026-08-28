@@ -217,14 +217,7 @@ namespace Gallery
 		CollectPhotos(photoDir);
 
 		// vanilla dir (root)
-		static std::filesystem::path vanillaDir;
-		if (vanillaDir.empty()) {
-			std::filesystem::path basePath{ *"sScreenShotBaseName:Display"_ini };
-			vanillaDir = basePath.parent_path();
-			if (!vanillaDir.is_absolute()) {
-				vanillaDir = std::filesystem::current_path() / vanillaDir;
-			}
-		}
+		const auto&     vanillaDir = Shared::GetVanillaPhotosFolder();
 		std::error_code ec;
 		if (!std::filesystem::equivalent(vanillaDir, photoDir, ec)) {
 			CollectPhotos(vanillaDir);

@@ -410,7 +410,7 @@ namespace Screenshot
 			skipVanillaScreenshot = true;
 
 			std::string pngPath = useCustomFolderDirectory ? std::format("{}\\Screenshot_{}.png", photoDirectory.string(), GetIndex()) :
-			                                                 std::format("{}_{}.png", *"sScreenShotBaseName:Display"_pref, GetIndex());
+			                                                 std::format("{}_{}.png", *"sScreenShotBaseName:Display"_ini, GetIndex());
 
 			// apply overlay
 			if (const auto [overlay, alpha] = MANAGER(PhotoMode)->GetOverlay(); overlay) {

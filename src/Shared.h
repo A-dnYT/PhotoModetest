@@ -67,14 +67,35 @@ namespace Shared
 		return {};
 	}
 
+	inline const std::filesystem::path& GetDocumentsFolder()
+	{
+		static std::filesystem::path docDir = []() -> std::filesystem::path {
+			if (auto directory = SKSE::log::log_directory()) {
+				directory->remove_filename();
+				return *directory;
+			}
+			return {};
+		}();
+
+		return docDir;
+	}
+
 	inline std::filesystem::path GetDocumentsFolder(std::string_view a_subPath)
 	{
-		if (auto directory = SKSE::log::log_directory()) {
-			directory->remove_filename();
-			*directory /= a_subPath;
-			return *directory;
-		}
-		return {};
+		return GetDocumentsFolder() / a_subPath;
+	}
+
+	inline const std::filesystem::path& GetVanillaPhotosFolder()
+	{
+		static std::filesystem::path vanillaDir = []() {
+			const auto            baseName = "sScreenShotBaseName:Display"_ini;
+			std::filesystem::path base{ *baseName };
+			const auto            dir = base.parent_path();
+
+			return dir.is_absolute() ? dir : std::filesystem::current_path() / dir;
+		}();
+
+		return vanillaDir;
 	}
 
 	template <class F>
