@@ -9,7 +9,7 @@
 #define MANAGER(T) T::Manager::GetSingleton()
 
 #include "RE/Skyrim.h"
-#include "REX/REX/Singleton.h"
+#include "REX/REX.h"
 #include "SKSE/SKSE.h"
 
 #include <codecvt>
@@ -37,20 +37,16 @@
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 
-#include <ClibUtil/RNG.hpp>
 #include <ClibUtil/editorID.hpp>
-#include <ClibUtil/hash.hpp>
-#include <ClibUtil/simpleINI.hpp>
-#include <ClibUtil/string.hpp>
+#include <ClibUtil/simpleini.hpp>
 
 #define DLLEXPORT __declspec(dllexport)
 
 using namespace std::literals;
-using namespace clib_util;
-using namespace string::literals;
 using namespace RE::literals;
 
-namespace logger = SKSE::log;
+namespace ini = clib_util::ini;
+namespace editorID = clib_util::editorID;
 
 using EventResult = RE::BSEventNotifyControl;
 
@@ -98,12 +94,10 @@ using StringSet = FlatSet<std::string, string_hash, std::equal_to<>>;
 
 namespace stl
 {
-	using namespace SKSE::stl;
-
 	template <class T>
 	void write_thunk_call(std::uintptr_t a_src)
 	{
-		auto& trampoline = SKSE::GetTrampoline();
+		auto& trampoline = REL::GetTrampoline();
 		T::func = trampoline.write_call<5>(a_src, T::thunk);
 	}
 
@@ -134,13 +128,39 @@ namespace stl
 		Patch p(a_src, BYTES);
 		p.ready();
 
-		auto& trampoline = SKSE::GetTrampoline();
-		trampoline.write_branch<5>(a_src, T::thunk);
+		auto& trampoline = REL::GetTrampoline();
+		trampoline.write_jmp<5>(a_src, T::thunk);
 
 		auto alloc = trampoline.allocate(p.getSize());
 		std::memcpy(alloc, p.getCode(), p.getSize());
 
 		T::func = reinterpret_cast<std::uintptr_t>(alloc);
+	}
+
+	inline std::string uft16_to_uft8(std::wstring_view a_value)
+	{
+		std::string value8;
+		REX::UTF16_TO_UTF8(a_value, value8);
+		return value8;
+	}
+
+	inline std::wstring uft8_to_uft16(std::string_view a_value)
+	{
+		std::wstring value16;
+		REX::UTF8_TO_UTF16(a_value, value16);
+		return value16;
+	}
+}
+
+namespace Runtime
+{
+	inline constexpr REL::Version SSE_1_7_99(1, 7, 99, 0);
+	inline constexpr REL::Version MIN_ADDRESS_LIBRARY_V5 = SSE_1_7_99;
+
+	[[nodiscard]] inline bool IsAtLeast1_7_99() noexcept
+	{
+		static bool result = REX::FModule::GetExecutingModule().GetFileVersion() >= Runtime::SSE_1_7_99;
+		return result;
 	}
 }
 

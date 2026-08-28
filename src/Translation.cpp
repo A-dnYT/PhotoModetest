@@ -5,7 +5,7 @@ namespace Translation
 	std::string Manager::GetGameLanguage()
 	{
 		const auto setting = RE::GetINISetting("sLanguage:General");
-		return (setting && setting->GetType() == RE::Setting::Type::kString) ? string::toupper(setting->GetString()) : "ENGLISH"s;
+		return (setting && setting->GetType() == RE::Setting::Type::kString) ? REX::STR::TO_UPPER(setting->GetString()) : "ENGLISH"s;
 	}
 
 	void Manager::BuildTranslationMap()
@@ -13,7 +13,7 @@ namespace Translation
 		std::filesystem::path path{ std::format(R"(Data\Interface\Translations\PhotoMode_{}.txt)", GetGameLanguage()) };
 
 		if (!LoadTranslation(path)) {
-			logger::info("Failed to load translation file in {}, loading default ENGLISH file...", path.string());
+			REX::INFO("Failed to load translation file in {}, loading default ENGLISH file...", path.string());
 			LoadTranslation(R"(Data\Interface\Translations\PhotoMode_ENGLISH.txt)"sv);
 		}
 	}
@@ -22,7 +22,7 @@ namespace Translation
 	{
 		std::error_code ec;
 		if (!std::filesystem::exists(a_path, ec)) {
-			logger::info("Unable to load translations ({})", ec.message());
+			REX::INFO("Unable to load translations ({})", ec.message());
 			return false;
 		}
 
@@ -30,7 +30,7 @@ namespace Translation
 		if (!filestream.good()) {
 			return false;
 		} else {
-			logger::info("Reading translations from {}...", a_path.string());
+			REX::INFO("Reading translations from {}...", a_path.string());
 		}
 
 		filestream.imbue(std::locale(filestream.getloc(), new std::codecvt_utf16<wchar_t, 0x10FFFF, std::little_endian>));
@@ -38,7 +38,7 @@ namespace Translation
 		// check if the BOM is UTF-16
 		constexpr wchar_t BOM_UTF16LE = 0xFEFF;
 		if (filestream.get() != BOM_UTF16LE) {
-			logger::info("\tBOM Error, file must be encoded in UCS-2 LE.");
+			REX::INFO("\tBOM Error, file must be encoded in UCS-2 LE.");
 			return false;
 		}
 
@@ -53,7 +53,8 @@ namespace Translation
 			if (std::isspace(value.back())) {
 				value.pop_back();
 			}
-			translationMap.emplace(*stl::utf16_to_utf8(key), *stl::utf16_to_utf8(value));
+
+			translationMap.emplace(stl::uft16_to_uft8(key), stl::uft16_to_uft8(value));
 		}
 
 		return true;

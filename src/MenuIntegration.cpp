@@ -1,5 +1,7 @@
 #include "MenuIntegration.h"
 
+#include "Input.h"
+
 namespace MenuIntegration
 {
 	void Manager::Register()
@@ -8,7 +10,7 @@ namespace MenuIntegration
 
 		if (GetModuleHandle(L"TweenMenuOverhaul") != nullptr) {
 			SKSE::GetModCallbackEventSource()->AddEventSink(this);
-			logger::info("Registered for mod callback event");
+			REX::INFO("Registered for mod callback event");
 		}
 	}
 
@@ -169,6 +171,21 @@ namespace MenuIntegration
 
 		if (a_evn->menuName == RE::Console::MENU_NAME) {
 			consoleOpen = a_evn->opening;
+
+			const auto photoModeMgr = MANAGER(PhotoMode);
+
+			if (a_evn->opening) {
+				if (photoModeMgr->IsActive() && photoModeMgr->IsHidden()) {
+					photoModeMgr->ToggleUI();
+				}
+			} else {
+				if (photoModeMgr->IsActive() && MANAGER(Input)->DoNavigateWithMouse()) {
+					Input::Manager::ToggleCursor(true);
+				}
+				if (MANAGER(Gallery)->IsActive()) {
+					Input::Manager::ToggleCursor(true);
+				}
+			}
 		} else if (a_evn->menuName == RE::JournalMenu::MENU_NAME) {
 			if (a_evn->opening) {
 				if (photoMode.openFromPause || photoGallery.openFromPause) {

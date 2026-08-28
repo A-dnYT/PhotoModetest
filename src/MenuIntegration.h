@@ -71,7 +71,7 @@ namespace MenuIntegration
 	};
 
 	class Manager :
-		public REX::Singleton<Manager>,
+		public REX::TSingleton<Manager>,
 		public RE::BSTEventSink<RE::MenuOpenCloseEvent>,
 		public RE::BSTEventSink<SKSE::ModCallbackEvent>
 	{

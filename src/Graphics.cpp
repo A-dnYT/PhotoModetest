@@ -135,7 +135,7 @@ namespace Texture
 			0.0f,
 			a_outputImage);
 		if (FAILED(hr)) {
-			logger::info("Failed to compress dds");
+			REX::INFO("Failed to compress dds");
 			return false;
 		}
 		return true;
@@ -144,10 +144,10 @@ namespace Texture
 	bool SaveToDDS(const DirectX::ScratchImage& a_inputImage, std::string_view a_path)
 	{
 		// Save texture
-		const auto wPath = stl::utf8_to_utf16(a_path);
-		auto       hr = DirectX::SaveToDDSFile(a_inputImage.GetImages(), 1, a_inputImage.GetMetadata(), DirectX::DDS_FLAGS_NONE, wPath->c_str());
+		const auto wPath = stl::uft8_to_uft16(a_path);
+		auto       hr = DirectX::SaveToDDSFile(a_inputImage.GetImages(), 1, a_inputImage.GetMetadata(), DirectX::DDS_FLAGS_NONE, wPath.c_str());
 		if (FAILED(hr)) {
-			logger::info("Failed to save dds");
+			REX::INFO("Failed to save dds");
 			return false;
 		}
 		return true;
@@ -156,11 +156,11 @@ namespace Texture
 	bool SaveToPNG(const DirectX::ScratchImage& a_inputImage, std::string_view a_path, bool a_forceSRGB)
 	{
 		// Save PNG
-		const auto wPath = stl::utf8_to_utf16(a_path);
+		const auto wPath = stl::uft8_to_uft16(a_path);
 		auto       hr = DirectX::SaveToWICFile(*a_inputImage.GetImage(0, 0, 0), a_forceSRGB ? DirectX::WIC_FLAGS_FORCE_SRGB : DirectX::WIC_FLAGS_NONE,
-				  DirectX::GetWICCodec(DirectX::WIC_CODEC_PNG), wPath->c_str());
+				  DirectX::GetWICCodec(DirectX::WIC_CODEC_PNG), wPath.c_str());
 		if (FAILED(hr)) {
-			logger::info("Failed to save png");
+			REX::INFO("Failed to save png");
 			return false;
 		}
 		return true;
@@ -169,7 +169,7 @@ namespace Texture
 
 std::string Mesh::Sanitize(std::string& a_path)
 {
-	a_path = clib_util::string::tolower(a_path);
+	a_path = REX::STR::TO_LOWER(a_path);
 
 	static const boost::regex slashPattern("/+|\\\\+");
 	static const boost::regex leadingSlashPattern("^\\\\+");

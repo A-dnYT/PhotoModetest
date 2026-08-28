@@ -1,6 +1,7 @@
 #include "Input.h"
 
 #include "Gallery/Manager.h"
+#include "MenuIntegration.h"
 #include "PhotoMode/Hotkeys.h"
 #include "PhotoMode/Manager.h"
 #include "Screenshots/Manager.h"
@@ -37,7 +38,7 @@ namespace Input
 	{
 		if (const auto inputMgr = RE::BSInputDeviceManager::GetSingleton()) {
 			inputMgr->AddEventSink<RE::InputEvent*>(GetSingleton());
-			logger::info("Registered for hotkey event");
+			REX::INFO("Registered for hotkey event");
 		}
 	}
 
@@ -601,12 +602,11 @@ namespace Input
 			return;
 		}
 
-		const auto hotKeys = MANAGER(PhotoMode::Hotkeys);
-
-		auto cursorMenu = RE::UI::GetSingleton()->GetMenu<RE::CursorMenu>();
-		auto userEvents = RE::UserEvents::GetSingleton();
-
 		using namespace SKSE::InputMap;
+
+		const auto hotKeys = MANAGER(PhotoMode::Hotkeys);
+		auto       userEvents = RE::UserEvents::GetSingleton();
+		auto       cursorMenu = RE::UI::GetSingleton()->GetMenu<RE::CursorMenu>();
 
 		for (auto event = *a_evn; event; event = event->next) {
 			if (!SetInputDevice(event->GetDevice())) {

@@ -154,14 +154,14 @@ namespace Input
 {
 	struct ProcessInputQueue
 	{
-		static void thunk(RE::BSTEventSource<RE::InputEvent*>* a_dispatcher, RE::InputEvent* const* a_events)
+		static void thunk(RE::BSInputDeviceManager* a_deviceManager, RE::InputEvent* const* a_events)
 		{
-			if (a_events && MANAGER(Gallery)->IsActive() && !MANAGER(MenuIntegration)->GetConsoleOpen()) {
+			if (a_events && *a_events && MANAGER(Gallery)->IsActive() && !MANAGER(MenuIntegration)->GetConsoleOpen()) {
 				MANAGER(Input)->ProcessGalleryEvents(a_events);
 				constexpr RE::InputEvent* const dummy[] = { nullptr };
-				func(a_dispatcher, dummy);
+				func(a_deviceManager, dummy);
 			} else {
-				func(a_dispatcher, a_events);
+				func(a_deviceManager, a_events);
 			}
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
@@ -169,7 +169,7 @@ namespace Input
 
 	void InstallHooks()
 	{
-		REL::Relocation<std::uintptr_t> inputUnk(RELOCATION_ID(67315, 68617), OFFSET(0x7B, 0x7B));
+		REL::Relocation<std::uintptr_t> inputUnk(RELOCATION_ID(67315, 68617), 0x7B); 
 		stl::write_thunk_call<ProcessInputQueue>(inputUnk.address());
 	}
 }

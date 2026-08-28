@@ -2,7 +2,7 @@
 
 namespace PhotoMode::IGCSBridge
 {
-	class Bridge : public REX::Singleton<Bridge>
+	class Bridge : public REX::TSingleton<Bridge>
 	{
 	public:
 		void Initialize();

@@ -18,7 +18,7 @@ namespace ImGui
 		kComboBoxText
 	};
 
-	class Styles : public REX::Singleton<Styles>
+	class Styles : public REX::TSingleton<Styles>
 	{
 	public:
 		ImU32  GetColorU32(USER_STYLE a_style) const;
@@ -131,7 +131,7 @@ namespace ImGui
 
 			return { T(), false };
 		} else {
-			return { string::to_num<T>(a_str), false };
+			return { REX::STR::TO_NUM<T>(a_str), false };
 		}
 	}
 

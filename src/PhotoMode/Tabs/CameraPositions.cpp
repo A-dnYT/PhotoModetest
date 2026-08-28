@@ -30,7 +30,7 @@ namespace PhotoMode
 		if (glz_ec) {
 			return std::unexpected(std::format("Failed to write camera position to file '{}': {}", filePath.string(), glz::format_error(glz_ec, buffer)));
 		} else {
-			logger::debug("Saved camera position to: {}", filePath.string());
+			REX::DEBUG("Saved camera position to: {}", filePath.string());
 			return {};
 		}
 	}
@@ -44,7 +44,7 @@ namespace PhotoMode
 		if (glz_ec) {
 			return std::unexpected(std::format("Failed to load camera position file '{}': {}", filePath.string(), glz::format_error(glz_ec, buffer)));
 		} else {
-			logger::debug("Successfully loaded camera position from: {}", filePath.string());
+			REX::DEBUG("Successfully loaded camera position from: {}", filePath.string());
 			return {};
 		}
 	}
@@ -54,7 +54,7 @@ namespace PhotoMode
 		const std::filesystem::path filePath = a_folder / std::format("CameraPosition_{}.json", timestamp);
 		std::error_code             ec;
 		if (std::filesystem::remove(filePath, ec)) {
-			logger::debug("Deleted camera position file: {}", filePath.string());
+			REX::DEBUG("Deleted camera position file: {}", filePath.string());
 			return {};
 		} else {
 			return std::unexpected(std::format("Failed to delete camera position file '{}': {}", filePath.string(), ec.message()));
@@ -63,7 +63,7 @@ namespace PhotoMode
 
 	Result<void> CameraPosition::ApplyToCamera() const
 	{
-		logger::info("Applying camera position: {}", name);
+		REX::INFO("Applying camera position: {}", name);
 
 		const auto pcCamera = RE::PlayerCamera::GetSingleton();
 		if (!pcCamera) {
@@ -162,7 +162,7 @@ namespace PhotoMode
 					selectedPositionIndex = FindPositionIndexByTimestamp(result.value());
 					RE::PlaySound("UIMenuOK");
 				} else {
-					logger::error("Failed to save camera position: {}", result.error());
+					REX::ERROR("Failed to save camera position: {}", result.error());
 				}
 			}
 
@@ -184,7 +184,7 @@ namespace PhotoMode
 			positions = result.value();
 			positionNames.clear();
 		} else {
-			logger::error("Failed to refresh camera positions: {}", result.error());
+			REX::ERROR("Failed to refresh camera positions: {}", result.error());
 			positions.clear();
 			positionNames.clear();
 		}
@@ -218,7 +218,7 @@ namespace PhotoMode
 			if (result) {
 				RE::PlaySound("UIMenuOK");
 			} else {
-				logger::error("Failed to load camera position: {}", result.error());
+				REX::ERROR("Failed to load camera position: {}", result.error());
 			}
 		}
 	}
@@ -232,7 +232,7 @@ namespace PhotoMode
 				selectedPositionIndex = -1;
 				RE::PlaySound("UIMenuCancel");
 			} else {
-				logger::error("Failed to delete camera position: {}", result.error());
+				REX::ERROR("Failed to delete camera position: {}", result.error());
 			}
 		}
 	}
@@ -251,7 +251,7 @@ namespace PhotoMode
 			return std::unexpected(result.error());
 		}
 
-		logger::debug("Saved camera position {} to {}", position.timestamp, GetCameraPositionsDirectory().string());
+		REX::DEBUG("Saved camera position {} to {}", position.timestamp, GetCameraPositionsDirectory().string());
 		return position.timestamp;
 	}
 
@@ -261,7 +261,7 @@ namespace PhotoMode
 		if (!result) {
 			return std::unexpected(result.error());
 		}
-		logger::debug("Loaded camera position {} from {}", a_position.name, GetCameraPositionsDirectory().string());
+		REX::DEBUG("Loaded camera position {} from {}", a_position.name, GetCameraPositionsDirectory().string());
 		return {};
 	}
 
@@ -271,7 +271,7 @@ namespace PhotoMode
 		if (!result) {
 			return std::unexpected(result.error());
 		}
-		logger::debug("Deleted camera position {} from {}", a_position.name, GetCameraPositionsDirectory().string());
+		REX::DEBUG("Deleted camera position {} from {}", a_position.name, GetCameraPositionsDirectory().string());
 		return {};
 	}
 
@@ -295,7 +295,7 @@ namespace PhotoMode
 			if (result) {
 				positionList.push_back(std::move(position));
 			} else {
-				logger::warn("Failed to load camera position file {}: {}", filename, result.error());
+				REX::WARN("Failed to load camera position file {}: {}", filename, result.error());
 			}
 		});
 
@@ -348,7 +348,7 @@ namespace PhotoMode
 		EnsureDirectoryInitialized();
 
 		if (auto result = Shared::GetOrCreateDirectory(cameraPositionsDirectory); !result) {
-			logger::error("Failed to create camera positions directory: {}", result.error().message());
+			REX::ERROR("Failed to create camera positions directory: {}", result.error().message());
 		}
 	}
 
@@ -356,7 +356,7 @@ namespace PhotoMode
 	{
 		if (cameraPositionsDirectory.empty()) {
 			if (auto directory = Shared::GetDocumentsFolder("Saves\\PhotoMode\\CameraPositions"sv); !directory.empty()) {
-				logger::info("Camera positions directory: {}", directory.string());
+				REX::INFO("Camera positions directory: {}", directory.string());
 				cameraPositionsDirectory = directory;
 			}
 		}

@@ -6,19 +6,13 @@
 #include "ImGui/IconsFonts.h"
 #include "ImGui/Styles.h"
 #include "ImGui/Widgets.h"
+#include "Input.h"
+#include "MenuIntegration.h"
 #include "Screenshots/Manager.h"
 #include "Shared.h"
 
-#include "Input.h"
-
 namespace PhotoMode
 {
-	void Manager::Register()
-	{
-		RE::UI::GetSingleton()->AddEventSink<RE::MenuOpenCloseEvent>(this);
-		logger::info("Registered for menu open/close event");
-	}
-
 	void Manager::LoadMCMSettings(const CSimpleIniA& a_ini)
 	{
 		freeCameraSpeed = static_cast<float>(a_ini.GetDoubleValue("Settings", "fFreeCameraTranslationSpeed", freeCameraSpeed));
@@ -44,7 +38,7 @@ namespace PhotoMode
 
 	bool Manager::ShouldBlockInput() const
 	{
-		return blockInputToPhotoMode || MANAGER(Gallery)->IsActive();
+		return MANAGER(MenuIntegration)->GetConsoleOpen() || MANAGER(Gallery)->IsActive();
 	}
 
 	bool Manager::IsActive() const
@@ -200,7 +194,7 @@ namespace PhotoMode
 
 		updateKeyboardFocus = false;
 
-		MANAGER(Input)->ToggleCursor(false);
+		Input::Manager::ToggleCursor(false);
 		MANAGER(Input)->ResetInputDevices();
 
 		activated = false;
@@ -401,6 +395,8 @@ namespace PhotoMode
 				currentTab = kCamera;
 			}
 
+			bool blockInputToPhotoMode = MANAGER(MenuIntegration)->GetConsoleOpen();
+
 			// console already covers menu
 			if (blockInputToPhotoMode) {
 				ImGui::PushStyleVar(ImGuiStyleVar_DisabledAlpha, ImGui::GetStyle().Alpha);
@@ -593,25 +589,5 @@ namespace PhotoMode
 			mousePos.x <= winPos.x + winSize.x + buffer &&
 			mousePos.y >= winPos.y - buffer &&
 			mousePos.y <= winPos.y + winSize.y + buffer;
-	}
-
-	EventResult Manager::ProcessEvent(const RE::MenuOpenCloseEvent* a_evn, RE::BSTEventSource<RE::MenuOpenCloseEvent>*)
-	{
-		if (!a_evn) {
-			return EventResult::kContinue;
-		}
-
-		if (a_evn->menuName == RE::Console::MENU_NAME) {
-			blockInputToPhotoMode = a_evn->opening;
-			if (a_evn->opening) {
-				if (IsActive() && IsHidden()) {
-					ToggleUI();
-				}
-			} else if (IsActive() && MANAGER(Input)->DoNavigateWithMouse()) {
-				Input::Manager::ToggleCursor(true);
-			}
-		}
-
-		return EventResult::kContinue;
 	}
 }

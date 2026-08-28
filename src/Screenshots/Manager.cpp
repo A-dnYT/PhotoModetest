@@ -27,7 +27,7 @@ namespace Screenshot
 	void Collection::LoadImages(std::string_view a_folder)
 	{
 		if (auto result = Shared::GetOrCreateDirectory(a_folder); !result) {
-			logger::error("Failed to create {} folder: {}", a_folder, result.error().message());
+			REX::ERROR("Failed to create {} folder: {}", a_folder, result.error().message());
 			return;
 		}
 
@@ -61,8 +61,8 @@ namespace Screenshot
 			a_screenshot.bad = true;
 
 			DirectX::TexMetadata info;
-			const auto           widePath = stl::utf8_to_utf16(a_screenshot.path.string());
-			const auto           hr = GetMetadataFromDDSFile(widePath->c_str(), DirectX::DDS_FLAGS_NONE, info);
+			const auto           wPath = stl::uft8_to_uft16(a_screenshot.path.string());
+			const auto           hr = GetMetadataFromDDSFile(wPath.c_str(), DirectX::DDS_FLAGS_NONE, info);
 
 			a_screenshot.bad = FAILED(hr) || info.width % 4 != 0 || info.height % 4 != 0;
 			if (a_screenshot.bad) {
@@ -72,7 +72,7 @@ namespace Screenshot
 			const auto    fileName = a_screenshot.path.filename().string();
 			boost::smatch matches;
 			if (boost::regex_match(fileName, matches, oldPattern)) {
-				const auto newName = std::format("Screenshot_{}.dds", string::to_num<std::int32_t>(matches[1].str()));
+				const auto newName = std::format("Screenshot_{}.dds", REX::STR::TO_NUM<std::int32_t>(matches[1].str()));
 				if (fileName != newName) {
 					a_screenshot.renameTo = a_screenshot.path.parent_path() / newName;
 				}
@@ -83,23 +83,23 @@ namespace Screenshot
 			std::error_code ec;
 
 			if (bad) {
-				logger::info("\tDeleting invalid texture ({})", path.string());
+				REX::INFO("\tDeleting invalid texture ({})", path.string());
 				std::filesystem::remove(path, ec);
 				if (ec) {
-					logger::warn("\t\tFailed to delete {} ({})", path.string(), ec.message());
+					REX::WARN("\t\tFailed to delete {} ({})", path.string(), ec.message());
 				}
 				continue;
 			}
 
 			if (!renameTo.empty()) {
 				if (std::filesystem::exists(renameTo, ec) && !std::filesystem::equivalent(path, renameTo, ec)) {
-					logger::warn("\tSkipped renaming {} -> {} (already exists)", path.filename().string(), renameTo.filename().string());
+					REX::WARN("\tSkipped renaming {} -> {} (already exists)", path.filename().string(), renameTo.filename().string());
 				} else {
 					std::filesystem::rename(path, renameTo, ec);
 					if (ec) {
-						logger::warn("\tFailed to rename {} -> {} ({})", path.filename().string(), renameTo.filename().string(), ec.message());
+						REX::WARN("\tFailed to rename {} -> {} ({})", path.filename().string(), renameTo.filename().string(), ec.message());
 					} else {
-						logger::info("\tRenamed texture {} -> {}", path.filename().string(), renameTo.filename().string());
+						REX::INFO("\tRenamed texture {} -> {}", path.filename().string(), renameTo.filename().string());
 						path = renameTo;
 					}
 				}
@@ -132,7 +132,7 @@ namespace Screenshot
 
 		std::size_t idx;
 		do {
-			idx = RNG().generate<std::size_t>(0, maxIndex - 1);
+			idx = REX::TRandom<std::size_t>().Generate(0, maxIndex - 1);
 		} while (idx == previousIndex[0] || (maxIndex > 2 && idx == previousIndex[1]));
 
 		previousIndex[1] = previousIndex[0];
@@ -167,9 +167,9 @@ namespace Screenshot
 				Shared::RecycleFile(finalPath.wstring());
 			} else {
 				if (!Shared::RemoveFile(finalPath)) {
-					logger::warn("\t\tFailed to delete {}", finalPath.string());
+					REX::WARN("\t\tFailed to delete {}", finalPath.string());
 				} else {
-					logger::info("\tDeleting texture ({})", finalPath.string());
+					REX::INFO("\tDeleting texture ({})", finalPath.string());
 				}
 			}
 			return true;
@@ -228,9 +228,9 @@ namespace Screenshot
 		excludedImages.clear();
 		std::string exclusions = a_ini.GetValue("Gallery", "sExcludedLoadScreens", "");
 		if (!exclusions.empty()) {
-			for (const auto& entry : string::split(exclusions, ",")) {
+			for (const auto& entry : REX::STR::SPLIT(exclusions, ",")) {
 				if (!entry.empty()) {
-					excludedImages.insert(string::to_num<std::int32_t>(entry));
+					excludedImages.insert(REX::STR::TO_NUM<std::int32_t>(entry));
 				}
 			}
 		}
@@ -246,21 +246,21 @@ namespace Screenshot
 
 	void Manager::LoadScreenshots()
 	{
-		logger::info("Loading screenshots...");
+		REX::INFO("Loading screenshots...");
 
 		photoDirectory = Shared::GetDocumentsFolder("Photos"sv);
 		if (auto result = Shared::GetOrCreateDirectory(photoDirectory); !result) {
-			logger::error("Failed to create photo directory: {}", result.error().message());
+			REX::ERROR("Failed to create photo directory: {}", result.error().message());
 		}
 
 		thumbnailDirectory = Shared::GetDocumentsFolder("Photos/Thumbnails"sv);
 		if (auto result = Shared::GetOrCreateDirectory(thumbnailDirectory); !result) {
-			logger::error("Failed to create thumbnail folder: {}", result.error().message());
+			REX::ERROR("Failed to create thumbnail folder: {}", result.error().message());
 		}
 
-		logger::info("\tScreenshot directory : {}", photoDirectory.string());
-		logger::info("\tScreenshot textures : {}", screenshotFolder);
-		logger::info("\tPainting textures : {}", paintingFolder);
+		REX::INFO("\tScreenshot directory : {}", photoDirectory.string());
+		REX::INFO("\tScreenshot textures : {}", screenshotFolder);
+		REX::INFO("\tPainting textures : {}", paintingFolder);
 
 		screenshots.LoadImages(screenshotFolder);
 		paintings.LoadImages(paintingFolder);
@@ -273,9 +273,9 @@ namespace Screenshot
 			ini.SetLongValue("Screenshots", "iScreenshotIndex", index);
 		});
 
-		logger::info("\t{} screenshots", screenshots.size());
-		logger::info("\t{} paintings", paintings.size());
-		logger::info("\tscreenshot index : {}", index);
+		REX::INFO("\t{} screenshots", screenshots.size());
+		REX::INFO("\t{} paintings", paintings.size());
+		REX::INFO("\tscreenshot index : {}", index);
 	}
 
 	const std::filesystem::path& Manager::GetPhotoDirectory() const
@@ -337,12 +337,12 @@ namespace Screenshot
 		auto screenshotsIndex = screenshots.GetHighestIndex();
 		auto paintingsIndex = paintings.GetHighestIndex();
 
-		logger::info("\tAssigning highest screenshot index...");
-		logger::info("\t\tmcm index: {}", mcmIndex);
-		logger::info("\t\tphoto directory index: {}", photosIndex);
-		logger::info("\t\tvanilla directory index: {}", vanillaScreenshotIndex);
-		logger::info("\t\tscreenshot textures index: {}", screenshotsIndex);
-		logger::info("\t\tpainting textures index: {}", paintingsIndex);
+		REX::INFO("\tAssigning highest screenshot index...");
+		REX::INFO("\t\tmcm index: {}", mcmIndex);
+		REX::INFO("\t\tphoto directory index: {}", photosIndex);
+		REX::INFO("\t\tvanilla directory index: {}", vanillaScreenshotIndex);
+		REX::INFO("\t\tscreenshot textures index: {}", screenshotsIndex);
+		REX::INFO("\t\tpainting textures index: {}", paintingsIndex);
 
 		index = std::max({ mcmIndex, photosIndex, vanillaScreenshotIndex, screenshotsIndex, paintingsIndex });
 	}
@@ -472,7 +472,7 @@ namespace Screenshot
 		if (result) {
 			screenshots.AddImage(screenshotImage);
 		} else {
-			logger::warn("Screenshots: failed to save {}", screenshotImage.path);
+			REX::WARN("Screenshots: failed to save {}", screenshotImage.path);
 		}
 
 		// painting
@@ -497,7 +497,7 @@ namespace Screenshot
 			if (result) {
 				paintings.AddImage(paintingImage);
 			} else {
-				logger::warn("Screenshots: failed to save {}", paintingImage.path);
+				REX::WARN("Screenshots: failed to save {}", paintingImage.path);
 			}
 		}
 	}

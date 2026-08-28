@@ -62,7 +62,7 @@ namespace Gallery
 
 	using PhotoPtr = std::shared_ptr<Photo>;
 
-	class Manager final : public REX::Singleton<Manager>
+	class Manager final : public REX::TSingleton<Manager>
 	{
 	public:
 		bool CanShowMenu();

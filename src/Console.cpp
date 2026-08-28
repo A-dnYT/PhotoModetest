@@ -41,11 +41,11 @@ namespace Console
 
 	void Install()
 	{
-		logger::info("{:*^30}", "CONSOLE COMMANDS");
+		REX::INFO("{:*^30}", "CONSOLE COMMANDS");
 
 		ConsoleCommandHandler<StartPhotoMode>::Install();
 		ConsoleCommandHandler<StartPhotoGallery>::Install();
 
-		logger::info("{:*^30}", "DATA");
+		REX::INFO("{:*^30}", "DATA");
 	}
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Settings.h"
+
 namespace LoadScreen
 {
 	enum class Type : std::uint8_t
@@ -16,7 +18,7 @@ namespace LoadScreen
 		RE::NiPoint3 translateOffset{};
 	};
 
-	class Manager final : public REX::Singleton<Manager>
+	class Manager final : public REX::TSingleton<Manager>
 	{
 	public:
 		void LoadMCMSettings(const CSimpleIniA& a_ini);

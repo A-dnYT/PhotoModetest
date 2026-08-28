@@ -10,7 +10,7 @@ namespace PhotoMode
 
 		std::error_code ec;
 		if (!std::filesystem::exists(overlaysPath, ec)) {
-			logger::info("Unable to load overlays ({})", ec.message());
+			REX::INFO("Unable to load overlays ({})", ec.message());
 			return;
 		}
 

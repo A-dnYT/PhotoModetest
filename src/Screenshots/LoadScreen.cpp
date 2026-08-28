@@ -18,7 +18,7 @@ namespace LoadScreen
 		std::error_code ec;
 		const auto      iterator = std::filesystem::directory_iterator(R"(Data\Meshes\PhotoMode\Paintings)", ec);
 		if (ec) {
-			logger::info("Painting assets not found, skipping ({})"sv, ec.message());
+			REX::INFO("Painting assets not found, skipping ({})"sv, ec.message());
 		}
 		for (const auto& entry : iterator) {
 			if (entry.exists()) {
@@ -47,19 +47,19 @@ namespace LoadScreen
 	Type Manager::GetScreenshotModelType() const
 	{
 		if (Screenshot::Manager::GetSingleton()->CanDisplayScreenshotInLoadScreen()) {
-			auto rng = RNG();
+			auto rng = REX::TRandom<std::int32_t>();
 
 			// do a coin flip if both chances are equal
-			std::int32_t coinFlip = rng.generate<std::int32_t>(0, 1);
+			std::int32_t coinFlip = rng.Generate(0, 1);
 
 			if (coinFlip == 1) {
-				if (!paintingModels.empty() && paintingChance > 0 && rng.generate<std::int32_t>(0, 100) <= paintingChance) {
+				if (!paintingModels.empty() && paintingChance > 0 && rng.Generate(0, 100) <= paintingChance) {
 					return Type::kPainting;
 				}
 			}
 
 			// fallback to fullscreen
-			if (fullscreenChance > 0 && rng.generate<std::int32_t>(0, 100) <= fullscreenChance) {
+			if (fullscreenChance > 0 && rng.Generate(0, 100) <= fullscreenChance) {
 				return Type::kFullScreen;
 			}
 		}
@@ -85,7 +85,7 @@ namespace LoadScreen
 			break;
 		case Type::kPainting:
 			{
-				current.obj = paintingModels[RNG().generate<std::size_t>(0, paintingModels.size() - 1)];  // Load random painting mesh
+				current.obj = paintingModels[REX::TRandom<std::size_t>().Generate(0, paintingModels.size() - 1)];  // Load random painting mesh
 				current.texturePath = GetScreenshotTexture();
 
 				// skip if empty
@@ -170,7 +170,7 @@ namespace LoadScreen
 			lightingShader->FinishSetupGeometry(a_canvas);
 
 			newMaterial->~BSLightingShaderMaterialBase();
-			RE::free(newMaterial);
+			RE::MemoryManager::GetSingleton()->GetThreadScrapHeap()->Deallocate(newMaterial);
 		}
 	}
 }

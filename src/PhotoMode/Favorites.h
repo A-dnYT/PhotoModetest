@@ -2,7 +2,7 @@
 
 namespace PhotoMode::Favorites
 {
-	class Manager : public REX::Singleton<Manager>
+	class Manager : public REX::TSingleton<Manager>
 	{
 	public:
 		void LoadFavorites();

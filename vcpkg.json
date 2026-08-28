@@ -3,9 +3,16 @@
   "version-string": "3.0.0",
   "description": "",
   "homepage": "",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "dependencies": [
     "boost-unordered",
+    {
+      "name": "commonlib-shared",
+      "features": [
+        "xbyak",
+        "random"
+      ]
+    },
     "boost-regex",
     "clib-util",
     "directxtex",
@@ -17,8 +24,7 @@
     "glaze",
     "rapidfuzz",
     "rsm-binary-io",
-    "spdlog",
-    "xbyak"
+    "spdlog"
   ],
-  "builtin-baseline": "aae277acf4e7de287ddb5e208b5316614de6aad7"
+  "builtin-baseline": "2aaa9626248fb084c20f2c5c014a10ff4bb6b2af"
 }

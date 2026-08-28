@@ -40,7 +40,7 @@ namespace Shared
 		static boost::regex screenshotPattern{ R"(Screenshot_?(\d+))", boost::regex::icase };
 		if (boost::regex_search(a_path, matches, screenshotPattern)) {
 			if (matches.size() > 1) {
-				return string::to_num<std::int32_t>(matches[1].str());
+				return REX::STR::TO_NUM<std::int32_t>(matches[1].str());
 			}
 		}
 		return -1;
@@ -54,7 +54,7 @@ namespace Shared
 			absPath = std::filesystem::absolute(a_srcPNG, ec);
 		}
 
-		return a_thumbnailDir / std::format("{:X}.png", hash::fnv1a_64(string::tolower(absPath.string())));
+		return a_thumbnailDir / std::format("{:X}.png", REX::FNV1A_64(REX::STR::TO_LOWER(absPath.string())));
 	}
 
 	inline std::expected<void, std::error_code> GetOrCreateDirectory(const std::filesystem::path& a_dir)
@@ -69,7 +69,7 @@ namespace Shared
 
 	inline std::filesystem::path GetDocumentsFolder(std::string_view a_subPath)
 	{
-		if (auto directory = logger::log_directory()) {
+		if (auto directory = SKSE::log::log_directory()) {
 			directory->remove_filename();
 			*directory /= a_subPath;
 			return *directory;
@@ -82,7 +82,7 @@ namespace Shared
 	{
 		std::error_code ec;
 		if (!std::filesystem::exists(a_dir, ec) || ec) {
-			logger::info("{} does not exist", a_dir.string());
+			REX::INFO("{} does not exist", a_dir.string());
 			return;
 		}
 

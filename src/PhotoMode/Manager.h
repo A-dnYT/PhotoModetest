@@ -10,12 +10,9 @@
 
 namespace PhotoMode
 {
-	class Manager :
-		public REX::Singleton<Manager>,
-		public RE::BSTEventSink<RE::MenuOpenCloseEvent>
+	class Manager : public REX::TSingleton<Manager>
 	{
 	public:
-		void Register();
 		void LoadMCMSettings(const CSimpleIniA& a_ini);
 
 		bool CanShowMenu();
@@ -87,13 +84,10 @@ namespace PhotoMode
 		[[nodiscard]] bool SetupJournalMenu() const;
 		void               UpdateMouseHoveringOverWindow();
 
-		EventResult ProcessEvent(const RE::MenuOpenCloseEvent* a_evn, RE::BSTEventSource<RE::MenuOpenCloseEvent>*) override;
-
 		// members
 		bool activated{ false };
 		bool hiddenUI{ false };
 		bool revertENB{ false };
-		bool blockInputToPhotoMode{ false };
 
 		std::int32_t                  previousTab{ kCamera };
 		std::int32_t                  currentTab{ kCamera };
@@ -109,8 +103,6 @@ namespace PhotoMode
 		Filters  filterTab;
 		Overlays overlaysTab;
 
-		bool updateKeyboardFocus{ false };
-
 		RE::CameraState originalcameraState{ RE::CameraState::kThirdPerson };
 
 		bool resetWindow{ true };
@@ -124,6 +116,7 @@ namespace PhotoMode
 		ImGuiID lastFocusedID{ 0 };
 		ImGuiID lastHoveredID{ 0 };
 		bool    restoreLastFocusID{ false };
+		bool    updateKeyboardFocus{ false };
 
 		float freeCameraSpeed{ 4.0f };
 		bool  freezeTimeOnStart{ true };

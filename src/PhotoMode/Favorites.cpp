@@ -33,7 +33,7 @@ namespace PhotoMode::Favorites
 
 		std::string buffer;
 		if (const auto ec = glz::read_file_json(favorites, filePath.string(), buffer)) {
-			logger::error("Failed to load favorites from {} ({})", filePath.string(), glz::format_error(ec, buffer));
+			REX::ERROR("Failed to load favorites from {} ({})", filePath.string(), glz::format_error(ec, buffer));
 		}
 	}
 
@@ -46,7 +46,7 @@ namespace PhotoMode::Favorites
 
 		std::string buffer;
 		if (const auto ec = glz::write_file_json(favorites, filePath.string(), buffer)) {
-			logger::error("Failed to save favorites to {} ({})", filePath.string(), glz::format_error(ec, buffer));
+			REX::ERROR("Failed to save favorites to {} ({})", filePath.string(), glz::format_error(ec, buffer));
 		}
 	}
 

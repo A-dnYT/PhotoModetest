@@ -10,7 +10,7 @@ namespace
 	constexpr float kUpDownScale = 1.0f;
 	constexpr float kLeftRightSign = 1.0f;
 	constexpr float kUpDownSign = 1.0f;
-	constexpr float kDegToRad = std::numbers::pi_v<float> / 180.0f;
+	constexpr float kDegToRad = RE::NI_PI / 180.0f;
 
 	// Set to true only when investigating a regression. Normal builds keep a short status log.
 	constexpr bool kVerboseDiagnostics = false;
@@ -137,7 +137,7 @@ namespace PhotoMode::IGCSBridge
 			}
 		}
 
-		logger::info("[Skyrim IGCSDOF] Status file: {}", statusFile.string());*/
+		REX::INFO("[Skyrim IGCSDOF] Status file: {}", statusFile.string());*/
 		AppendDiagnostic("Direct IGCS integration initialized; V20 native Photo Mode ZXY matrix basis. Uses the exact FromEulerAnglesZXY matrix convention discovered in Skyrim Photo Mode. Sample rotation remains fixed; V19 toe-in convergence is disabled.");
 	}
 
@@ -1013,7 +1013,7 @@ namespace PhotoMode::IGCSBridge
 		/*std::ofstream output(statusFile, std::ios::app);
 		if (output)
 			output << text << '\n';*/
-		logger::info("[Skyrim IGCSDOF Direct] {}", text);
+		REX::INFO("[Skyrim IGCSDOF Direct] {}", text);
 	}
 
 	void Bridge::AppendDiagnostic(std::string_view text) const
@@ -1022,7 +1022,7 @@ namespace PhotoMode::IGCSBridge
 			/*std::ofstream output(statusFile, std::ios::app);
 		if (output)
 			output << text << '\n';*/
-			logger::info("[Skyrim IGCSDOF DIAG] {}", text);
+			REX::INFO("[Skyrim IGCSDOF DIAG] {}", text);
 		}
 	}
 }

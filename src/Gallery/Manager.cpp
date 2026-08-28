@@ -25,7 +25,7 @@ namespace Gallery
 
 		std::error_code ec;
 		if (!a_thumbnailOut.empty() && std::filesystem::exists(a_thumbnailOut, ec)) {
-			image = std::make_unique<ImGui::Texture>(*stl::utf8_to_utf16(a_thumbnailOut.string()));
+			image = std::make_unique<ImGui::Texture>(stl::uft8_to_uft16(a_thumbnailOut.string()));
 			if (image && image->LoadImpl(1.0f)) {
 				state.store(TextureState::kReady, std::memory_order_release);
 				return true;
@@ -33,7 +33,7 @@ namespace Gallery
 			std::filesystem::remove(a_thumbnailOut, ec);
 		}
 
-		image = std::make_unique<ImGui::Texture>(*stl::utf8_to_utf16(a_path.string()));
+		image = std::make_unique<ImGui::Texture>(stl::uft8_to_uft16(a_path.string()));
 		const bool loaded = image && image->LoadImpl(a_scale, {}, a_thumbnailOut.empty());
 
 		if (loaded) {
@@ -295,9 +295,9 @@ namespace Gallery
 			Shared::RecycleFile(photo->pngPath.wstring());
 		} else {
 			if (!Shared::RemoveFile(photo->pngPath)) {
-				logger::warn("Gallery: failed to delete PNG ({})", photo->pngPath.string());
+				REX::WARN("Gallery: failed to delete PNG ({})", photo->pngPath.string());
 			} else {
-				logger::info("Gallery: deleted PNG ({})", photo->pngPath.string());
+				REX::INFO("Gallery: deleted PNG ({})", photo->pngPath.string());
 			}
 		}
 
@@ -309,9 +309,9 @@ namespace Gallery
 			Shared::RecycleFile(photo->thumbnailPath.wstring());
 		} else {
 			if (!Shared::RemoveFile(photo->thumbnailPath)) {
-				logger::warn("Gallery: failed to delete thumbnail ({})", photo->thumbnailPath.string());
+				REX::WARN("Gallery: failed to delete thumbnail ({})", photo->thumbnailPath.string());
 			} else {
-				logger::info("Gallery: deleted thumbnail ({})", photo->thumbnailPath.string());
+				REX::INFO("Gallery: deleted thumbnail ({})", photo->thumbnailPath.string());
 			}
 		}
 

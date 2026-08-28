@@ -14,7 +14,7 @@ namespace IconFont
 		bool Load(float a_scale);
 	};
 
-	class Manager final : public REX::Singleton<Manager>
+	class Manager final : public REX::TSingleton<Manager>
 	{
 	public:
 		struct GamepadIcon
