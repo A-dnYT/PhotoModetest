@@ -169,7 +169,7 @@ namespace Input
 
 	void InstallHooks()
 	{
-		REL::Relocation<std::uintptr_t> inputUnk(RELOCATION_ID(67315, 68617), 0x7B); 
+		REL::Relocation<std::uintptr_t> inputUnk(RELOCATION_ID(67315, 68617), 0x7B);
 		stl::write_thunk_call<ProcessInputQueue>(inputUnk.address());
 	}
 }
