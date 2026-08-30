@@ -2,6 +2,6 @@
 	"papyrus_event":"OpenTween_PhotoMode",
 	"menuName":"PHOTO MODE",
 	"icon":"map",
-	"priority": 10,
+	"priority": 50,
 	"category": "bottom"
 }
