@@ -40,7 +40,7 @@ namespace Shared
 		static boost::regex screenshotPattern{ R"(Screenshot_?(\d+))", boost::regex::icase };
 		if (boost::regex_search(a_path, matches, screenshotPattern)) {
 			if (matches.size() > 1) {
-				return stl::to_num_safe<ScreenshotIndex>(matches[1].str()).value_or(-1); // STR::TO_NUM throws if idx is INT_MAX
+				return stl::to_num_safe<ScreenshotIndex>(matches[1].str()).value_or(-1);  // STR::TO_NUM throws if idx is INT_MAX
 			}
 		}
 		return -1;
