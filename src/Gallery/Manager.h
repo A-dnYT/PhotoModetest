@@ -28,7 +28,7 @@ namespace Gallery
 		std::filesystem::path           thumbnailPath{};
 		std::filesystem::file_time_type lastWriteTime{};
 		std::string                     name{};
-		std::int32_t                    index{ -1 };
+		ScreenshotIndex                 index{ -1 };
 		float                           aspectRatio{ 16.0f / 9.0f };
 		bool                            hasLoadScreenDDS{ false };
 

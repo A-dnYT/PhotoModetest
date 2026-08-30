@@ -5,6 +5,8 @@ namespace Screenshot
 	inline constexpr std::string_view screenshotFolder{ R"(data\textures\photomode\screenshots)" };
 	inline constexpr std::string_view paintingFolder{ R"(data\textures\photomode\screenshots\paintings)" };
 
+	inline constexpr ScreenshotIndex maxCounterIndex = std::numeric_limits<std::int32_t>::max();
+
 	// .../Screenshot48.dds, 48
 	struct Image
 	{

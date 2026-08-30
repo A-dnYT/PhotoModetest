@@ -34,13 +34,13 @@ namespace Shared
 		}
 	}
 
-	inline std::int32_t GetScreenshotIndex(const std::string& a_path)
+	inline ScreenshotIndex GetScreenshotIndex(const std::string& a_path)
 	{
 		boost::smatch       matches;
 		static boost::regex screenshotPattern{ R"(Screenshot_?(\d+))", boost::regex::icase };
 		if (boost::regex_search(a_path, matches, screenshotPattern)) {
 			if (matches.size() > 1) {
-				return REX::STR::TO_NUM<std::int32_t>(matches[1].str());
+				return stl::to_num_safe<ScreenshotIndex>(matches[1].str()).value_or(-1); // STR::TO_NUM throws if idx is INT_MAX
 			}
 		}
 		return -1;

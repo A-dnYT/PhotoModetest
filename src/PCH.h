@@ -152,6 +152,17 @@ namespace stl
 		REX::UTF8_TO_UTF16(a_value, value16);
 		return value16;
 	}
+
+	template <class T>
+	std::optional<T> to_num_safe(std::string_view a_str)
+	{
+		T value{};
+		const auto [ptr, ec] = std::from_chars(a_str.data(), a_str.data() + a_str.size(), value);
+		if (ec == std::errc() && ptr == a_str.data() + a_str.size()) {
+			return value;
+		}
+		return std::nullopt;
+	}
 }
 
 namespace Runtime

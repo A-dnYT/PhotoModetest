@@ -72,9 +72,11 @@ namespace Screenshot
 			const auto    fileName = a_screenshot.path.filename().string();
 			boost::smatch matches;
 			if (boost::regex_match(fileName, matches, oldPattern)) {
-				const auto newName = std::format("Screenshot_{}.dds", REX::STR::TO_NUM<std::int32_t>(matches[1].str()));
-				if (fileName != newName) {
-					a_screenshot.renameTo = a_screenshot.path.parent_path() / newName;
+				if (const auto parsedIndex = Shared::GetScreenshotIndex(fileName); parsedIndex >= 0) {
+					const auto newName = std::format("Screenshot_{}.dds", parsedIndex);
+					if (fileName != newName) {
+						a_screenshot.renameTo = a_screenshot.path.parent_path() / newName;
+					}
 				}
 			}
 		});
@@ -148,10 +150,12 @@ namespace Screenshot
 
 	ScreenshotIndex Collection::GetHighestIndex() const
 	{
-		if (images.empty()) {
-			return -1;
+		for (auto it = images.rbegin(); it != images.rend(); ++it) {
+			if (it->index <= maxCounterIndex) {
+				return it->index + 1;
+			}
 		}
-		return images.back().index + 1;
+		return -1;
 	}
 
 	void Collection::DeleteImagesWithIndex(ScreenshotIndex a_index, bool a_recycle)
@@ -230,7 +234,9 @@ namespace Screenshot
 		if (!exclusions.empty()) {
 			for (const auto& entry : REX::STR::SPLIT(exclusions, ",")) {
 				if (!entry.empty()) {
-					excludedImages.insert(REX::STR::TO_NUM<std::int32_t>(entry));
+					if (const auto value = stl::to_num_safe<ScreenshotIndex>(entry)) {
+						excludedImages.insert(*value);
+					}
 				}
 			}
 		}
@@ -323,10 +329,12 @@ namespace Screenshot
 
 	void Manager::AssignHighestPossibleIndex()
 	{
-		const auto get_photos_index = [this]() {
-			std::int32_t photosIndex = -1;
+		const auto get_photos_index = [this]() -> ScreenshotIndex {
+			ScreenshotIndex photosIndex = -1;
 			Shared::ForEachFile(photoDirectory, ".png"sv, [&](const auto& a_path) {
-				photosIndex = std::max(photosIndex, Shared::GetScreenshotIndex(a_path.string()) + 1);
+				if (const auto idx = Shared::GetScreenshotIndex(a_path.string()); idx >= 0 && idx <= maxCounterIndex) {
+					photosIndex = std::max(photosIndex, idx + 1);
+				}
 			});
 			return photosIndex;
 		};
@@ -344,7 +352,7 @@ namespace Screenshot
 		REX::INFO("\t\tscreenshot textures index: {}", screenshotsIndex);
 		REX::INFO("\t\tpainting textures index: {}", paintingsIndex);
 
-		index = std::max({ mcmIndex, photosIndex, vanillaScreenshotIndex, screenshotsIndex, paintingsIndex });
+		index = std::max<ScreenshotIndex>(0, std::max({ mcmIndex, photosIndex, vanillaScreenshotIndex, screenshotsIndex, paintingsIndex }));
 	}
 
 	void Manager::IncrementIndex()
