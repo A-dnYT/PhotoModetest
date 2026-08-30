@@ -9,7 +9,7 @@ namespace Screenshot
 	struct Image
 	{
 		Image() = default;
-		Image(std::string_view a_path, std::uint32_t a_index);
+		Image(std::string_view a_path, ScreenshotIndex a_index);
 		Image(std::string& a_path);
 
 		bool operator<(const Image& a_rhs) const
@@ -18,9 +18,9 @@ namespace Screenshot
 		}
 
 		// members
-		std::string  path{};
-		std::int32_t index{ -1 };
-		bool         excludeFromLoadscreen{ false };
+		std::string     path{};
+		ScreenshotIndex index{ -1 };
+		bool            excludeFromLoadscreen{ false };
 	};
 
 	// Collection of photo textures to be displayed on loading screens.
@@ -34,15 +34,15 @@ namespace Screenshot
 		void               LoadImages(std::string_view a_folder);
 		void               AddImage(Image a_image);
 		const std::string& GetRandomPath();
-		std::int32_t       GetHighestIndex() const;
+		ScreenshotIndex    GetHighestIndex() const;
 
-		void         DeleteImagesWithIndex(std::int32_t a_index, bool a_recycle);
-		bool         ContainsIndex(std::int32_t a_index) const;
-		Image*       GetImageWithIndex(std::int32_t a_index);
-		const Image* GetImageWithIndex(std::int32_t a_index) const;
+		void         DeleteImagesWithIndex(ScreenshotIndex a_index, bool a_recycle);
+		bool         ContainsIndex(ScreenshotIndex a_index) const;
+		Image*       GetImageWithIndex(ScreenshotIndex a_index);
+		const Image* GetImageWithIndex(ScreenshotIndex a_index) const;
 
-		void ApplyExclusions(const FlatSet<std::int32_t>& a_excluded);
-		void ToggleLoadScreenForIndex(std::int32_t a_index);
+		void ApplyExclusions(const FlatSet<ScreenshotIndex>& a_excluded);
+		void ToggleLoadScreenForIndex(ScreenshotIndex a_index);
 
 		// members
 		std::vector<Image>         images{};
@@ -66,15 +66,15 @@ namespace Screenshot
 		const std::filesystem::path& GetPhotoDirectory() const;
 		const std::filesystem::path& GetThumbnailDirectory() const;
 
-		void DeleteImagesWithIndex(std::int32_t a_index, bool a_recycle);
+		void DeleteImagesWithIndex(ScreenshotIndex a_index, bool a_recycle);
 
 		// opt out of loading screens
-		void ToggleLoadScreenForIndex(std::int32_t a_index);
-		bool IsImageExcludedFromLoadScreen(std::int32_t a_index) const;
+		void ToggleLoadScreenForIndex(ScreenshotIndex a_index);
+		bool IsImageExcludedFromLoadScreen(ScreenshotIndex a_index) const;
 
-		std::uint32_t GetIndex() const;
-		void          AssignHighestPossibleIndex();
-		void          IncrementIndex();
+		ScreenshotIndex GetIndex() const;
+		void            AssignHighestPossibleIndex();
+		void            IncrementIndex();
 
 		bool        CanDisplayScreenshotInLoadScreen() const;
 		std::string GetRandomScreenshot();
@@ -85,20 +85,20 @@ namespace Screenshot
 		bool CanApplyPaintFilter() const;
 		bool GetForceSRGB() const;
 
-		const Image* GetScreenshotWithIndex(std::int32_t a_index) const;
-		const Image* GetPaintingWithIndex(std::int32_t a_index) const;
+		const Image* GetScreenshotWithIndex(ScreenshotIndex a_index) const;
+		const Image* GetPaintingWithIndex(ScreenshotIndex a_index) const;
 
 		void ApplyExclusions();
-		void ApplyExclusion(std::int32_t a_index);
+		void ApplyExclusion(ScreenshotIndex a_index);
 
 	private:
 		void TakeScreenshotAsTexture(RE::BSGraphics::Renderer* a_renderer, const DirectX::ScratchImage& a_ssImage, const DirectX::ScratchImage& a_paintingImage);
 		void SaveThumbnail(const DirectX::ScratchImage& a_ssImage, const std::string& a_pngPath);
 
 		// members
-		Collection   screenshots{};
-		Collection   paintings{};
-		std::int32_t index{ -1 };
+		Collection      screenshots{};
+		Collection      paintings{};
+		ScreenshotIndex index{ -1 };
 
 		bool takeScreenshotAsDDS{ true };
 		bool compressTextures{ true };
@@ -118,6 +118,6 @@ namespace Screenshot
 		std::filesystem::path photoDirectory{};
 		std::filesystem::path thumbnailDirectory{};
 
-		FlatSet<std::int32_t> excludedImages{};
+		FlatSet<ScreenshotIndex> excludedImages{};
 	};
 }

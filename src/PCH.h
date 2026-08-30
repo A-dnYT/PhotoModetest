@@ -55,6 +55,8 @@ using GAMEPAD_DIRECTX = RE::BSWin32GamepadDevice::Key;
 using GAMEPAD_ORBIS = RE::BSPCOrbisGamepadDevice::Key;
 using MOUSE = RE::BSWin32MouseDevice::Key;
 
+using ScreenshotIndex = std::int64_t;
+
 template <class T>
 using ComPtr = Microsoft::WRL::ComPtr<T>;
 

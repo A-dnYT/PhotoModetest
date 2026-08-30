@@ -7,7 +7,7 @@
 
 namespace Screenshot
 {
-	Image::Image(std::string_view a_path, std::uint32_t a_index) :
+	Image::Image(std::string_view a_path, ScreenshotIndex a_index) :
 		path(std::format("{}/Screenshot_{}.dds", a_path, a_index)),
 		index(a_index)
 	{}
@@ -146,7 +146,7 @@ namespace Screenshot
 		return validImages[GetRandomIndex()].path;
 	}
 
-	std::int32_t Collection::GetHighestIndex() const
+	ScreenshotIndex Collection::GetHighestIndex() const
 	{
 		if (images.empty()) {
 			return -1;
@@ -154,7 +154,7 @@ namespace Screenshot
 		return images.back().index + 1;
 	}
 
-	void Collection::DeleteImagesWithIndex(std::int32_t a_index, bool a_recycle)
+	void Collection::DeleteImagesWithIndex(ScreenshotIndex a_index, bool a_recycle)
 	{
 		const static auto root = std::filesystem::current_path();
 
@@ -178,24 +178,24 @@ namespace Screenshot
 		RebuildValidImages();
 	}
 
-	bool Collection::ContainsIndex(std::int32_t a_index) const
+	bool Collection::ContainsIndex(ScreenshotIndex a_index) const
 	{
 		return GetImageWithIndex(a_index) != nullptr;
 	}
 
-	Image* Collection::GetImageWithIndex(std::int32_t a_index)
+	Image* Collection::GetImageWithIndex(ScreenshotIndex a_index)
 	{
 		auto it = std::ranges::find(images, a_index, &Image::index);
 		return it != images.end() ? &*it : nullptr;
 	}
 
-	const Image* Collection::GetImageWithIndex(std::int32_t a_index) const
+	const Image* Collection::GetImageWithIndex(ScreenshotIndex a_index) const
 	{
 		auto it = std::ranges::find(images, a_index, &Image::index);
 		return it != images.end() ? &*it : nullptr;
 	}
 
-	void Collection::ApplyExclusions(const FlatSet<std::int32_t>& a_excluded)
+	void Collection::ApplyExclusions(const FlatSet<ScreenshotIndex>& a_excluded)
 	{
 		for (auto& image : images) {
 			image.excludeFromLoadscreen = a_excluded.contains(image.index);
@@ -203,7 +203,7 @@ namespace Screenshot
 		RebuildValidImages();
 	}
 
-	void Collection::ToggleLoadScreenForIndex(std::int32_t a_index)
+	void Collection::ToggleLoadScreenForIndex(ScreenshotIndex a_index)
 	{
 		if (auto image = GetImageWithIndex(a_index)) {
 			image->excludeFromLoadscreen = !image->excludeFromLoadscreen;
@@ -268,9 +268,9 @@ namespace Screenshot
 		ApplyExclusions();
 
 		Settings::GetSingleton()->Save(FileType::kMCM, [this](auto& ini) {
-			index = ini.GetLongValue("Screenshots", "iScreenshotIndex", index);
+			index = static_cast<ScreenshotIndex>(ini.GetLongValue("Screenshots", "iScreenshotIndex", static_cast<long>(index)));
 			AssignHighestPossibleIndex();
-			ini.SetLongValue("Screenshots", "iScreenshotIndex", index);
+			ini.SetLongValue("Screenshots", "iScreenshotIndex", static_cast<long>(index));
 		});
 
 		REX::INFO("\t{} screenshots", screenshots.size());
@@ -288,7 +288,7 @@ namespace Screenshot
 		return thumbnailDirectory;
 	}
 
-	void Manager::ToggleLoadScreenForIndex(std::int32_t a_index)
+	void Manager::ToggleLoadScreenForIndex(ScreenshotIndex a_index)
 	{
 		if (a_index < 0) {
 			return;
@@ -311,12 +311,12 @@ namespace Screenshot
 		});
 	}
 
-	bool Manager::IsImageExcludedFromLoadScreen(std::int32_t a_index) const
+	bool Manager::IsImageExcludedFromLoadScreen(ScreenshotIndex a_index) const
 	{
 		return excludedImages.contains(a_index);
 	}
 
-	std::uint32_t Manager::GetIndex() const
+	ScreenshotIndex Manager::GetIndex() const
 	{
 		return index;
 	}
@@ -331,11 +331,11 @@ namespace Screenshot
 			return photosIndex;
 		};
 
-		auto mcmIndex = index;
-		auto photosIndex = get_photos_index();
-		auto vanillaScreenshotIndex = "iScreenShotIndex:Display"_pref.value_or(-1);
-		auto screenshotsIndex = screenshots.GetHighestIndex();
-		auto paintingsIndex = paintings.GetHighestIndex();
+		ScreenshotIndex mcmIndex = index;
+		ScreenshotIndex photosIndex = get_photos_index();
+		ScreenshotIndex vanillaScreenshotIndex = RE::GetINISetting("iScreenShotIndex:Display")->GetSInt();
+		ScreenshotIndex screenshotsIndex = screenshots.GetHighestIndex();
+		ScreenshotIndex paintingsIndex = paintings.GetHighestIndex();
 
 		REX::INFO("\tAssigning highest screenshot index...");
 		REX::INFO("\t\tmcm index: {}", mcmIndex);
@@ -351,7 +351,7 @@ namespace Screenshot
 	{
 		index++;
 		Settings::GetSingleton()->Save(FileType::kMCM, [this](auto& ini) {
-			ini.SetLongValue("Screenshots", "iScreenshotIndex", index);
+			ini.SetLongValue("Screenshots", "iScreenshotIndex", static_cast<long>(index));
 		});
 	}
 
@@ -375,12 +375,12 @@ namespace Screenshot
 		return forceSRGB;
 	}
 
-	const Image* Manager::GetScreenshotWithIndex(std::int32_t a_index) const
+	const Image* Manager::GetScreenshotWithIndex(ScreenshotIndex a_index) const
 	{
 		return screenshots.GetImageWithIndex(a_index);
 	}
 
-	const Image* Manager::GetPaintingWithIndex(std::int32_t a_index) const
+	const Image* Manager::GetPaintingWithIndex(ScreenshotIndex a_index) const
 	{
 		return paintings.GetImageWithIndex(a_index);
 	}
@@ -531,7 +531,7 @@ namespace Screenshot
 		return paintings.GetRandomPath();
 	}
 
-	void Manager::DeleteImagesWithIndex(std::int32_t a_index, bool a_recycle)
+	void Manager::DeleteImagesWithIndex(ScreenshotIndex a_index, bool a_recycle)
 	{
 		excludedImages.erase(a_index);
 
