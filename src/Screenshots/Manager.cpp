@@ -417,8 +417,14 @@ namespace Screenshot
 		if (auto result = DirectX::CaptureTexture(device.Get(), deviceContext.Get(), texture2D, inputImage); result == S_OK) {
 			skipVanillaScreenshot = true;
 
+			const auto&      iniBaseName = *"sScreenShotBaseName:Display"_ini;
+			std::string_view baseName{ iniBaseName };
+			if (baseName.ends_with('_')) {
+				baseName.remove_suffix(1);
+			}
+
 			std::string pngPath = useCustomFolderDirectory ? std::format("{}\\Screenshot_{}.png", photoDirectory.string(), GetIndex()) :
-			                                                 std::format("{}_{}.png", *"sScreenShotBaseName:Display"_ini, GetIndex());
+			                                                 std::format("{}_{}.png", baseName, GetIndex());
 
 			// apply overlay
 			if (const auto [overlay, alpha] = MANAGER(PhotoMode)->GetOverlay(); overlay) {
