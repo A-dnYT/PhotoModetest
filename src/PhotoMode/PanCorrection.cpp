@@ -15,12 +15,14 @@ namespace PhotoMode::PanCorrection
 		constexpr float kPitchLimit = 1.5533f;  // ~89 degrees either side of level
 		constexpr float kNearVertical = 1.3f;   // ~75 degrees
 		constexpr float kStickDeadzone = 0.05f;
+		constexpr float kStickMinLearnInput = 0.25f;  // stick deflection needed on an axis to learn from it
 		constexpr float kMaxFrameTurn = 0.5f;   // bigger jumps come from something else setting the rotation
 
 		// Running totals used to learn how much the game turns per unit of input on each axis.
 		// Old samples decay away so the ratio follows frame-rate changes.
 		constexpr float kDecay = 0.97f;
-		constexpr float kMinSamples = 5.0f;  // input units needed on an axis before trusting it
+		constexpr float kMinMouseSamples = 5.0f;  // mouse counts needed on an axis before trusting it
+		constexpr float kMinStickSamples = 1.0f;  // accumulated stick deflection needed on an axis
 		constexpr float kMinRatio = 0.2f;
 		constexpr float kMaxRatio = 10.0f;
 
@@ -34,9 +36,9 @@ namespace PhotoMode::PanCorrection
 			void Reset() { *this = {}; }
 
 			// how many times faster the game turns horizontally than vertically for the same input
-			[[nodiscard]] float Ratio() const
+			[[nodiscard]] float Ratio(float a_minSamples) const
 			{
-				if (yawInput < kMinSamples || pitchInput < kMinSamples || yawTurn <= 0.0f || pitchTurn <= 0.0f) {
+				if (yawInput < a_minSamples || pitchInput < a_minSamples || yawTurn <= 0.0f || pitchTurn <= 0.0f) {
 					return 0.0f;
 				}
 				const float ratio = (yawTurn / yawInput) / (pitchTurn / pitchInput);
@@ -137,17 +139,21 @@ namespace PhotoMode::PanCorrection
 		const float inputX = mouseMoved ? std::abs(mouse.x) : (std::abs(rightStick.x) > kStickDeadzone ? std::abs(rightStick.x) : 0.0f);
 		const float inputY = mouseMoved ? std::abs(mouse.y) : (std::abs(rightStick.y) > kStickDeadzone ? std::abs(rightStick.y) : 0.0f);
 
-		// learn the game's own (uncorrected) response on each axis
-		if (inputX > 0.0f) {
+		// Learn the game's own (uncorrected) response on each axis, but only from frames where the game
+		// actually turned on that axis with a real amount of input. A stick pushed straight up still reports
+		// a little sideways drift that the game ignores; counting that as "input with no turn" made the learned
+		// horizontal speed shrink over time, so the vertical boost faded after about a second.
+		const float minInput = mouseMoved ? 1.0f : kStickMinLearnInput;
+		if (inputX >= minInput && gameYawDelta != 0.0f) {
 			response.yawTurn = response.yawTurn * kDecay + std::abs(gameYawDelta);
 			response.yawInput = response.yawInput * kDecay + inputX;
 		}
-		if (inputY > 0.0f) {
+		if (inputY >= minInput && gamePitchDelta != 0.0f) {
 			response.pitchTurn = response.pitchTurn * kDecay + std::abs(gamePitchDelta);
 			response.pitchInput = response.pitchInput * kDecay + inputY;
 		}
 
-		const float ratio = response.Ratio();
+		const float ratio = response.Ratio(mouseMoved ? kMinMouseSamples : kMinStickSamples);
 		if (ratio == 0.0f || gamePitchDelta == 0.0f) {
 			return;
 		}

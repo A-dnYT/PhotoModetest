@@ -63,6 +63,11 @@ namespace PhotoMode::AdjustHotkeys
 
 			Binding increase;
 			Binding decrease;
+
+			// hold actions (camera up/down) have no value: they act only while held
+			bool        holdAction{ false };
+			const char* increaseName{ "Increase" };
+			const char* decreaseName{ "Decrease" };
 		};
 
 		float GetFOV() { return RE::PlayerCamera::GetSingleton()->worldFOV; }
@@ -78,7 +83,7 @@ namespace PhotoMode::AdjustHotkeys
 		void  SetGlobalTime(float a_value) { RE::BSTimer::GetSingleton()->SetGlobalTimeMultiplier(a_value, true); }
 
 		// ranges match the sliders on the Camera and Time tabs
-		std::array<Control, 4> controls{ {
+		std::array<Control, 5> controls{ {
 			{ "FOV", 1.0f, 30.0f, 5.0f, 150.0f, GetFOV, SetFOV,
 				{ { 78, kNone }, { kNone, kNone } },     // Numpad +
 				{ { 74, kNone }, { kNone, kNone } } },   // Numpad -
@@ -91,7 +96,14 @@ namespace PhotoMode::AdjustHotkeys
 			{ "GlobalTime", 0.05f, 0.5f, 0.01f, 2.0f, GetGlobalTime, SetGlobalTime,
 				{ { 81, kNone }, { kNone, kNone } },     // Numpad 3
 				{ { 79, kNone }, { kNone, kNone } } },   // Numpad 1
+			// free camera move up / down (in addition to the game's own buttons); unbound by default
+			{ "Camera", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr,
+				{ { kNone, kNone }, { kNone, kNone } },
+				{ { kNone, kNone }, { kNone, kNone } },
+				true, "Up", "Down" },
 		} };
+
+		std::int16_t lastMoveDirection{ 0 };  // vertical direction we last set on the free camera
 
 		bool smoothMode{ false };
 
@@ -119,7 +131,7 @@ namespace PhotoMode::AdjustHotkeys
 
 		void AddToValue(Control& a_control, float a_delta)
 		{
-			if (a_delta == 0.0f) {
+			if (a_delta == 0.0f || a_control.holdAction) {
 				return;
 			}
 			a_control.set(std::clamp(a_control.get() + a_delta, a_control.min, a_control.max));
@@ -157,6 +169,24 @@ namespace PhotoMode::AdjustHotkeys
 			});
 		}
 
+		// Move the free camera up/down while the Camera Up/Down hotkeys are held.
+		void UpdateCameraMove()
+		{
+			const auto& move = controls.back();
+			const auto  direction = static_cast<std::int16_t>((move.increase.active ? 1 : 0) - (move.decrease.active ? 1 : 0));
+			if (direction == 0 && lastMoveDirection == 0) {
+				return;  // not ours: leave the game's own up/down buttons alone
+			}
+
+			const auto camera = RE::PlayerCamera::GetSingleton();
+			if (camera && camera->IsInFreeCameraMode()) {
+				if (const auto freeCamera = static_cast<RE::FreeCameraState*>(camera->currentState.get())) {
+					freeCamera->verticalDirection = direction;
+				}
+			}
+			lastMoveDirection = direction;
+		}
+
 		bool IsPrimaryOfActiveBinding(std::uint32_t a_key)
 		{
 			bool result = false;
@@ -176,10 +206,17 @@ namespace PhotoMode::AdjustHotkeys
 		for (auto& control : controls) {
 			const std::string name{ control.name };
 
-			control.increase.keyboard.Load(a_ini, "i" + name + "IncreaseKey");
-			control.increase.gamePad.Load(a_ini, "i" + name + "IncreaseGamePad");
-			control.decrease.keyboard.Load(a_ini, "i" + name + "DecreaseKey");
-			control.decrease.gamePad.Load(a_ini, "i" + name + "DecreaseGamePad");
+			const std::string inc{ control.increaseName };
+			const std::string dec{ control.decreaseName };
+
+			control.increase.keyboard.Load(a_ini, "i" + name + inc + "Key");
+			control.increase.gamePad.Load(a_ini, "i" + name + inc + "GamePad");
+			control.decrease.keyboard.Load(a_ini, "i" + name + dec + "Key");
+			control.decrease.gamePad.Load(a_ini, "i" + name + dec + "GamePad");
+
+			if (control.holdAction) {
+				continue;
+			}
 
 			control.step = std::max(0.0f, static_cast<float>(a_ini.GetDoubleValue("Controls", ("f" + name + "Step").c_str(), control.step)));
 			control.holdSpeed = std::max(0.0f, static_cast<float>(a_ini.GetDoubleValue("Controls", ("f" + name + "HoldSpeed").c_str(), control.holdSpeed)));
@@ -218,12 +255,16 @@ namespace PhotoMode::AdjustHotkeys
 			return std::chrono::duration<float>(now - a_entry.second).count() > staleKeyTimeout;
 		});
 		Evaluate(now);
+		UpdateCameraMove();
 
 		if (deltaTime <= 0.0f) {
 			return;
 		}
 
 		for (auto& control : controls) {
+			if (control.holdAction) {
+				continue;
+			}
 			float direction = 0.0f;
 			for (const auto& [binding, sign] : { std::pair{ &control.increase, 1.0f }, std::pair{ &control.decrease, -1.0f } }) {
 				if (binding->active && (smoothMode || std::chrono::duration<float>(now - binding->activatedAt).count() > holdDelay)) {
@@ -241,6 +282,7 @@ namespace PhotoMode::AdjustHotkeys
 			a_binding.matched = nullptr;
 			a_binding.active = false;
 		});
+		UpdateCameraMove();  // stop any up/down movement we started
 		lastUpdate = {};
 	}
 }

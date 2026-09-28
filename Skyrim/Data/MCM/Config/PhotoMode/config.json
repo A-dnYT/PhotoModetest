@@ -527,6 +527,50 @@
           }
         },
         {
+          "text": "$PM_CameraMoveHotkeys_Header",
+          "type": "header"
+        },
+        {
+          "id": "iCameraUpKey:Controls",
+          "text": "$PM_MoveUpKey_Text",
+          "help": "$PM_MoveKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraUpKeyModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraDownKey:Controls",
+          "text": "$PM_MoveDownKey_Text",
+          "help": "$PM_MoveKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraDownKeyModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
           "text": "$PM_FOVHotkeysGamepad_Header",
           "type": "header",
           "position": 1
@@ -695,6 +739,50 @@
         },
         {
           "id": "iGlobalTimeDecreaseGamePadModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "text": "$PM_CameraMoveHotkeysGamepad_Header",
+          "type": "header"
+        },
+        {
+          "id": "iCameraUpGamePad:Controls",
+          "text": "$PM_MoveUpKey_Text",
+          "help": "$PM_MoveKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraUpGamePadModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraDownGamePad:Controls",
+          "text": "$PM_MoveDownKey_Text",
+          "help": "$PM_MoveKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraDownGamePadModifier:Controls",
           "text": "$PM_ModifierKey_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
