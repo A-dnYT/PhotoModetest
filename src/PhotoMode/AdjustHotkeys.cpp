@@ -74,8 +74,11 @@ namespace PhotoMode::AdjustHotkeys
 		float GetViewRoll() { return RE::rad_to_deg(MANAGER(PhotoMode)->GetViewRoll()); }
 		void  SetViewRoll(float a_value) { MANAGER(PhotoMode)->SetViewRoll(RE::deg_to_rad(a_value)); }
 
-		// ranges match the sliders on the Camera tab
-		std::array<Control, 3> controls{ {
+		float GetGlobalTime() { return RE::BSTimer::QGlobalTimeMultiplier(); }
+		void  SetGlobalTime(float a_value) { RE::BSTimer::GetSingleton()->SetGlobalTimeMultiplier(a_value, true); }
+
+		// ranges match the sliders on the Camera and Time tabs
+		std::array<Control, 4> controls{ {
 			{ "FOV", 1.0f, 30.0f, 5.0f, 150.0f, GetFOV, SetFOV,
 				{ { 78, kNone }, { kNone, kNone } },     // Numpad +
 				{ { 74, kNone }, { kNone, kNone } } },   // Numpad -
@@ -85,6 +88,9 @@ namespace PhotoMode::AdjustHotkeys
 			{ "ViewRoll", 1.0f, 20.0f, -90.0f, 90.0f, GetViewRoll, SetViewRoll,
 				{ { 73, kNone }, { kNone, kNone } },     // Numpad 9
 				{ { 71, kNone }, { kNone, kNone } } },   // Numpad 7
+			{ "GlobalTime", 0.05f, 0.5f, 0.01f, 2.0f, GetGlobalTime, SetGlobalTime,
+				{ { 81, kNone }, { kNone, kNone } },     // Numpad 3
+				{ { 79, kNone }, { kNone, kNone } } },   // Numpad 1
 		} };
 
 		bool smoothMode{ false };

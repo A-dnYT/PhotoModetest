@@ -448,6 +448,76 @@
           }
         },
         {
+          "text": "$PM_GlobalTimeHotkeys_Header",
+          "type": "header"
+        },
+        {
+          "id": "iGlobalTimeIncreaseKey:Controls",
+          "text": "$PM_IncreaseKey_Text",
+          "help": "$PM_IncreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iGlobalTimeIncreaseKeyModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iGlobalTimeDecreaseKey:Controls",
+          "text": "$PM_DecreaseKey_Text",
+          "help": "$PM_DecreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iGlobalTimeDecreaseKeyModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "fGlobalTimeStep:Controls",
+          "text": "$PM_AdjustStep_Text",
+          "type": "slider",
+          "help": "$PM_AdjustStep_Help",
+          "valueOptions": {
+            "min": 0.01,
+            "max": 0.5,
+            "step": 0.01,
+            "formatString": "{2}x",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "id": "fGlobalTimeHoldSpeed:Controls",
+          "text": "$PM_AdjustHoldSpeed_Text",
+          "type": "slider",
+          "help": "$PM_AdjustHoldSpeed_Help",
+          "valueOptions": {
+            "min": 0.05,
+            "max": 5.0,
+            "step": 0.05,
+            "formatString": "{2}x/sec",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
           "text": "$PM_FOVHotkeysGamepad_Header",
           "type": "header",
           "position": 1
@@ -572,6 +642,50 @@
         },
         {
           "id": "iViewRollDecreaseGamePadModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "text": "$PM_GlobalTimeHotkeysGamepad_Header",
+          "type": "header"
+        },
+        {
+          "id": "iGlobalTimeIncreaseGamePad:Controls",
+          "text": "$PM_IncreaseKey_Text",
+          "help": "$PM_IncreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iGlobalTimeIncreaseGamePadModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iGlobalTimeDecreaseGamePad:Controls",
+          "text": "$PM_DecreaseKey_Text",
+          "help": "$PM_DecreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iGlobalTimeDecreaseGamePadModifier:Controls",
           "text": "$PM_ModifierKey_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",

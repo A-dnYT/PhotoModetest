@@ -1,7 +1,7 @@
 #pragma once
 
 // Hotkeys that nudge camera values while Photo Mode is open:
-//   Field of View, Free Camera Translate Speed, View Roll.
+//   Field of View, Free Camera Translate Speed, View Roll, Global Time Multiplier.
 //
 // Each value has an Increase and a Decrease binding. Every binding has a keyboard
 // combo and a gamepad combo, each made of a primary key plus an optional modifier
@@ -11,7 +11,7 @@
 //   f<Name>Step, f<Name>HoldSpeed
 //   bSmoothHotkeyAdjust
 //
-// where <Name> is FOV / TranslateSpeed / ViewRoll and <Dir> is Increase / Decrease.
+// where <Name> is FOV / TranslateSpeed / ViewRoll / GlobalTime and <Dir> is Increase / Decrease.
 //
 // Step mode (bSmoothHotkeyAdjust = 0): a tap changes the value by f<Name>Step, holding
 // for longer than a short delay changes it continuously at f<Name>HoldSpeed per second.
