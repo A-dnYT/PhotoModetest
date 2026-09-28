@@ -5,24 +5,43 @@
 #include <algorithm>
 #include <cmath>
 #include <numbers>
-#include <utility>
 
 namespace PhotoMode::PanCorrection
 {
 	namespace
 	{
-		constexpr float kPitchLimit = 1.5533f;       // ~89 degrees
+		constexpr float kPi = std::numbers::pi_v<float>;
+		constexpr float kTwoPi = 2.0f * kPi;
+		constexpr float kPitchLimit = 1.5533f;  // ~89 degrees either side of level
+		constexpr float kNearVertical = 1.3f;   // ~75 degrees
 		constexpr float kStickDeadzone = 0.05f;
-		constexpr float kMinYawForLearning = 1.0e-6f;
+		constexpr float kMaxFrameTurn = 0.5f;   // bigger jumps come from something else setting the rotation
 
-		// Per input device: how much yaw (radians) the game gives per unit of horizontal input,
-		// and which way the game turns pitch for positive vertical input (handles inverted Y).
+		// Running totals used to learn how much the game turns per unit of input on each axis.
+		// Old samples decay away so the ratio follows frame-rate changes.
+		constexpr float kDecay = 0.97f;
+		constexpr float kMinSamples = 5.0f;  // input units needed on an axis before trusting it
+		constexpr float kMinRatio = 0.2f;
+		constexpr float kMaxRatio = 10.0f;
+
 		struct Response
 		{
-			float yawPerUnit{ 0.0f };
-			float pitchSign{ 0.0f };
+			float yawTurn{ 0.0f };     // sum |yaw change|
+			float yawInput{ 0.0f };    // sum |horizontal input|
+			float pitchTurn{ 0.0f };   // sum |pitch change|
+			float pitchInput{ 0.0f };  // sum |vertical input|
 
 			void Reset() { *this = {}; }
+
+			// how many times faster the game turns horizontally than vertically for the same input
+			[[nodiscard]] float Ratio() const
+			{
+				if (yawInput < kMinSamples || pitchInput < kMinSamples || yawTurn <= 0.0f || pitchTurn <= 0.0f) {
+					return 0.0f;
+				}
+				const float ratio = (yawTurn / yawInput) / (pitchTurn / pitchInput);
+				return std::isfinite(ratio) ? std::clamp(ratio, kMinRatio, kMaxRatio) : 0.0f;
+			}
 		};
 
 		bool enabled{ true };
@@ -33,24 +52,17 @@ namespace PhotoMode::PanCorrection
 		Response mouseResponse;
 		Response stickResponse;
 
-		// rotation at the end of the previous update (after our correction), used as the baseline so
-		// look input applied by the game outside of Update is also covered
-		const RE::FreeCameraState* lastState{ nullptr };
-		RE::NiPoint2               lastRotation{};
+		// whether the game stores pitch as 0..2pi (looking up = just under 2pi) rather than -pi..pi
+		bool unsignedPitch{ true };
 
-		float WrapAngle(float a_angle)
+		// Always compare angles in -pi..pi, whatever range the game stores them in.
+		float WrapSigned(float a_angle)
 		{
-			constexpr float twoPi = 2.0f * std::numbers::pi_v<float>;
-			a_angle = std::fmod(a_angle + std::numbers::pi_v<float>, twoPi);
+			a_angle = std::fmod(a_angle + kPi, kTwoPi);
 			if (a_angle < 0.0f) {
-				a_angle += twoPi;
+				a_angle += kTwoPi;
 			}
-			return a_angle - std::numbers::pi_v<float>;
-		}
-
-		float Sign(float a_value)
-		{
-			return a_value > 0.0f ? 1.0f : (a_value < 0.0f ? -1.0f : 0.0f);
+			return a_angle - kPi;
 		}
 	}
 
@@ -63,15 +75,19 @@ namespace PhotoMode::PanCorrection
 	{
 		switch (a_event->GetEventType()) {
 		case RE::INPUT_EVENT_TYPE::kMouseMove:
-			if (const auto mouse = static_cast<const RE::MouseMoveEvent*>(a_event)) {
+			{
+				const auto mouse = static_cast<const RE::MouseMoveEvent*>(a_event);
 				mouseDelta.x += static_cast<float>(mouse->mouseInputX);
 				mouseDelta.y += static_cast<float>(mouse->mouseInputY);
 			}
 			break;
 		case RE::INPUT_EVENT_TYPE::kThumbstick:
-			if (const auto stick = static_cast<const RE::ThumbstickEvent*>(a_event); stick && stick->IsRight()) {
-				rightStick.x = stick->xValue;
-				rightStick.y = stick->yValue;
+			{
+				const auto stick = static_cast<const RE::ThumbstickEvent*>(a_event);
+				if (stick->IsRight()) {
+					rightStick.x = stick->xValue;
+					rightStick.y = stick->yValue;
+				}
 			}
 			break;
 		default:
@@ -85,38 +101,29 @@ namespace PhotoMode::PanCorrection
 		const RE::NiPoint2 mouse = mouseDelta;
 		mouseDelta = {};
 
-		const RE::FreeCameraState* previousState = std::exchange(lastState, nullptr);
-
 		if (!enabled || !a_state || !MANAGER(PhotoMode)->IsActive()) {
 			return;
 		}
 
-		// the camera is only look-controlled while the cursor is hidden (panning, or on gamepad);
-		// while the cursor is visible, rotation changes come from the menu (e.g. loading a camera position)
-		const bool cursorVisible = RE::UI::GetSingleton()->IsMenuOpen(RE::CursorMenu::MENU_NAME);
+		const float pitchAfter = a_state->rotation.x;
+		if (pitchAfter > kPi || a_pitchBefore > kPi) {
+			unsignedPitch = true;
+		} else if (pitchAfter < 0.0f || a_pitchBefore < 0.0f) {
+			unsignedPitch = false;
+		}
 
-		const RE::NiPoint2 before = previousState == a_state ? lastRotation : RE::NiPoint2{ a_pitchBefore, a_yawBefore };
-
-		struct Remember
-		{
-			RE::FreeCameraState* state;
-			~Remember()
-			{
-				lastState = state;
-				lastRotation = { state->rotation.x, state->rotation.y };
-			}
-		} remember{ a_state };
-
-		if (cursorVisible) {
+		// the camera is only look-controlled while the cursor is hidden (panning, or on gamepad)
+		if (RE::UI::GetSingleton()->IsMenuOpen(RE::CursorMenu::MENU_NAME)) {
 			return;
 		}
 
-		const float gamePitchDelta = a_state->rotation.x - before.x;
-		const float gameYawDelta = WrapAngle(a_state->rotation.y - before.y);
+		const float gamePitchDelta = WrapSigned(pitchAfter - a_pitchBefore);
+		const float gameYawDelta = WrapSigned(a_state->rotation.y - a_yawBefore);
 
-		// only touch frames where the game itself turned the camera from look input
-		// (so moving the cursor around the menu never rotates anything)
 		if (gamePitchDelta == 0.0f && gameYawDelta == 0.0f) {
+			return;  // the game didn't turn the camera this frame
+		}
+		if (std::abs(gamePitchDelta) > kMaxFrameTurn || std::abs(gameYawDelta) > kMaxFrameTurn) {
 			return;
 		}
 
@@ -126,27 +133,36 @@ namespace PhotoMode::PanCorrection
 			return;  // no look input, or both devices at once: leave the game's result alone
 		}
 
-		auto&              response = mouseMoved ? mouseResponse : stickResponse;
-		const RE::NiPoint2 input = mouseMoved ? mouse : RE::NiPoint2{
-			std::abs(rightStick.x) > kStickDeadzone ? rightStick.x : 0.0f,
-			std::abs(rightStick.y) > kStickDeadzone ? rightStick.y : 0.0f
-		};
+		auto&       response = mouseMoved ? mouseResponse : stickResponse;
+		const float inputX = mouseMoved ? std::abs(mouse.x) : (std::abs(rightStick.x) > kStickDeadzone ? std::abs(rightStick.x) : 0.0f);
+		const float inputY = mouseMoved ? std::abs(mouse.y) : (std::abs(rightStick.y) > kStickDeadzone ? std::abs(rightStick.y) : 0.0f);
 
-		// learn the game's horizontal rate from this frame
-		if (input.x != 0.0f && std::abs(gameYawDelta) > kMinYawForLearning) {
-			response.yawPerUnit = std::abs(gameYawDelta) / std::abs(input.x);
+		// learn the game's own (uncorrected) response on each axis
+		if (inputX > 0.0f) {
+			response.yawTurn = response.yawTurn * kDecay + std::abs(gameYawDelta);
+			response.yawInput = response.yawInput * kDecay + inputX;
 		}
-		// learn which way the game turns pitch for this device
-		if (input.y != 0.0f && gamePitchDelta != 0.0f) {
-			response.pitchSign = Sign(gamePitchDelta) * Sign(input.y);
+		if (inputY > 0.0f) {
+			response.pitchTurn = response.pitchTurn * kDecay + std::abs(gamePitchDelta);
+			response.pitchInput = response.pitchInput * kDecay + inputY;
 		}
 
-		if (input.y == 0.0f || response.yawPerUnit <= 0.0f || response.pitchSign == 0.0f) {
+		const float ratio = response.Ratio();
+		if (ratio == 0.0f || gamePitchDelta == 0.0f) {
 			return;
 		}
 
-		const float pitchDelta = response.pitchSign * response.yawPerUnit * input.y;
-		a_state->rotation.x = std::clamp(before.x + pitchDelta, -kPitchLimit, kPitchLimit);
+		// scale the game's own pitch change (keeps its direction, smoothing and invert-Y) so vertical matches horizontal
+		const float corrected = std::clamp(WrapSigned(a_pitchBefore) + gamePitchDelta * ratio, -kPitchLimit, kPitchLimit);
+
+		// near straight up/down, let the game's own pitch limit win so the view doesn't jitter against it
+		const float gamePitch = WrapSigned(pitchAfter);
+		if (std::abs(gamePitch) > kNearVertical && std::abs(corrected) > std::abs(gamePitch)) {
+			return;
+		}
+
+		// write back in the same range the game uses
+		a_state->rotation.x = (unsignedPitch && corrected < 0.0f) ? corrected + kTwoPi : corrected;
 	}
 
 	void Reset()
@@ -155,6 +171,5 @@ namespace PhotoMode::PanCorrection
 		rightStick = {};
 		mouseResponse.Reset();
 		stickResponse.Reset();
-		lastState = nullptr;
 	}
 }
