@@ -1,5 +1,6 @@
 #include "Manager.h"
 
+#include "AdjustHotkeys.h"
 #include "Gallery/Manager.h"
 #include "Hotkeys.h"
 #include "IGCSBridge/Bridge.h"  // IGCSDOF lifecycle + per-frame camera feed
@@ -148,7 +149,7 @@ namespace PhotoMode
 		TogglePlayerControls(false);
 
 		timeTab.OnFrameUpdate();
-		FOVControl::OnFrameUpdate();
+		AdjustHotkeys::OnFrameUpdate();
 		// IGCSDOF: publish the live camera packet and reconnect if the addon appears late.
 		IGCSBridge::Bridge::GetSingleton()->OnFrameUpdate();
 

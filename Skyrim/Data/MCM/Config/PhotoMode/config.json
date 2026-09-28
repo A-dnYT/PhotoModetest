@@ -3,7 +3,9 @@
   "modName": "PhotoMode",
   "displayName": "$PM_Title_MCM",
   "minMcmVersion": 13,
-  "pluginRequirements": [ "PhotoMode.esp" ],
+  "pluginRequirements": [
+    "PhotoMode.esp"
+  ],
   "cursorFillMode": "topToBottom",
   "pages": [
     {
@@ -98,52 +100,6 @@
           "ignoreConflicts": true,
           "valueOptions": {
             "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "iFOVIncreaseKey:Controls",
-          "text": "$PM_FOVIncrease_Key_Text",
-          "help": "$PM_FOVIncrease_Key_Help",
-          "type": "keymap",
-          "ignoreConflicts": true,
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "iFOVDecreaseKey:Controls",
-          "text": "$PM_FOVDecrease_Key_Text",
-          "help": "$PM_FOVDecrease_Key_Help",
-          "type": "keymap",
-          "ignoreConflicts": true,
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "fFOVStep:Controls",
-          "text": "$PM_FOVStep_Text",
-          "type": "slider",
-          "help": "$PM_FOVStep_Help",
-          "valueOptions": {
-            "min": 0.1,
-            "max": 10.0,
-            "step": 0.1,
-            "formatString": "{1} degrees",
-            "sourceType": "ModSettingFloat"
-          }
-        },
-        {
-          "id": "fFOVHoldSpeed:Controls",
-          "text": "$PM_FOVHoldSpeed_Text",
-          "type": "slider",
-          "help": "$PM_FOVHoldSpeed_Help",
-          "valueOptions": {
-            "min": 1.0,
-            "max": 120.0,
-            "step": 1.0,
-            "formatString": "{0} degrees/sec",
-            "sourceType": "ModSettingFloat"
           }
         },
         {
@@ -250,8 +206,266 @@
           }
         },
         {
+          "id": "iButtonScheme:Controls",
+          "text": "$PM_ControllerButtonScheme_Text",
+          "type": "enum",
+          "valueOptions": {
+            "options": [
+              "$PM_AUTODETECT",
+              "$PM_XBOX",
+              "$PM_PLAYSTATION"
+            ],
+            "sourceType": "ModSettingInt"
+          }
+        }
+      ]
+    },
+    {
+      "pageDisplayName": "$PM_CameraHotkeys_Page",
+      "cursorFillMode": "topToBottom",
+      "content": [
+        {
+          "text": "$PM_HotkeyBehaviour_Header",
+          "type": "header"
+        },
+        {
+          "id": "bSmoothHotkeyAdjust:Controls",
+          "text": "$PM_SmoothHotkeyAdjust_Text",
+          "type": "toggle",
+          "help": "$PM_SmoothHotkeyAdjust_Help",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
+          "text": "$PM_FOVHotkeys_Header",
+          "type": "header"
+        },
+        {
+          "id": "iFOVIncreaseKey:Controls",
+          "text": "$PM_IncreaseKey_Text",
+          "help": "$PM_IncreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFOVIncreaseKeyModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFOVDecreaseKey:Controls",
+          "text": "$PM_DecreaseKey_Text",
+          "help": "$PM_DecreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFOVDecreaseKeyModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "fFOVStep:Controls",
+          "text": "$PM_AdjustStep_Text",
+          "type": "slider",
+          "help": "$PM_AdjustStep_Help",
+          "valueOptions": {
+            "min": 0.1,
+            "max": 10.0,
+            "step": 0.1,
+            "formatString": "{1} deg",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "id": "fFOVHoldSpeed:Controls",
+          "text": "$PM_AdjustHoldSpeed_Text",
+          "type": "slider",
+          "help": "$PM_AdjustHoldSpeed_Help",
+          "valueOptions": {
+            "min": 1.0,
+            "max": 120.0,
+            "step": 1.0,
+            "formatString": "{0} deg/sec",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "text": "$PM_TranslateSpeedHotkeys_Header",
+          "type": "header"
+        },
+        {
+          "id": "iTranslateSpeedIncreaseKey:Controls",
+          "text": "$PM_IncreaseKey_Text",
+          "help": "$PM_IncreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iTranslateSpeedIncreaseKeyModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iTranslateSpeedDecreaseKey:Controls",
+          "text": "$PM_DecreaseKey_Text",
+          "help": "$PM_DecreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iTranslateSpeedDecreaseKeyModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "fTranslateSpeedStep:Controls",
+          "text": "$PM_AdjustStep_Text",
+          "type": "slider",
+          "help": "$PM_AdjustStep_Help",
+          "valueOptions": {
+            "min": 0.1,
+            "max": 10.0,
+            "step": 0.1,
+            "formatString": "{1}",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "id": "fTranslateSpeedHoldSpeed:Controls",
+          "text": "$PM_AdjustHoldSpeed_Text",
+          "type": "slider",
+          "help": "$PM_AdjustHoldSpeed_Help",
+          "valueOptions": {
+            "min": 0.5,
+            "max": 50.0,
+            "step": 0.5,
+            "formatString": "{1}/sec",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "text": "$PM_ViewRollHotkeys_Header",
+          "type": "header"
+        },
+        {
+          "id": "iViewRollIncreaseKey:Controls",
+          "text": "$PM_IncreaseKey_Text",
+          "help": "$PM_IncreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iViewRollIncreaseKeyModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iViewRollDecreaseKey:Controls",
+          "text": "$PM_DecreaseKey_Text",
+          "help": "$PM_DecreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iViewRollDecreaseKeyModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "fViewRollStep:Controls",
+          "text": "$PM_AdjustStep_Text",
+          "type": "slider",
+          "help": "$PM_AdjustStep_Help",
+          "valueOptions": {
+            "min": 0.1,
+            "max": 10.0,
+            "step": 0.1,
+            "formatString": "{1} deg",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "id": "fViewRollHoldSpeed:Controls",
+          "text": "$PM_AdjustHoldSpeed_Text",
+          "type": "slider",
+          "help": "$PM_AdjustHoldSpeed_Help",
+          "valueOptions": {
+            "min": 1.0,
+            "max": 120.0,
+            "step": 1.0,
+            "formatString": "{0} deg/sec",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "text": "$PM_FOVHotkeysGamepad_Header",
+          "type": "header",
+          "position": 1
+        },
+        {
           "id": "iFOVIncreaseGamePad:Controls",
-          "text": "$PM_FOVIncrease_Key_Text",
+          "text": "$PM_IncreaseKey_Text",
+          "help": "$PM_IncreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFOVIncreaseGamePadModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
           "valueOptions": {
@@ -260,7 +474,8 @@
         },
         {
           "id": "iFOVDecreaseGamePad:Controls",
-          "text": "$PM_FOVDecrease_Key_Text",
+          "text": "$PM_DecreaseKey_Text",
+          "help": "$PM_DecreaseKey_Help",
           "type": "keymap",
           "ignoreConflicts": true,
           "valueOptions": {
@@ -268,11 +483,100 @@
           }
         },
         {
-          "id": "iButtonScheme:Controls",
-          "text": "$PM_ControllerButtonScheme_Text",
-          "type": "enum",
+          "id": "iFOVDecreaseGamePadModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
           "valueOptions": {
-            "options": [ "$PM_AUTODETECT", "$PM_XBOX", "$PM_PLAYSTATION" ],
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "text": "$PM_TranslateSpeedHotkeysGamepad_Header",
+          "type": "header"
+        },
+        {
+          "id": "iTranslateSpeedIncreaseGamePad:Controls",
+          "text": "$PM_IncreaseKey_Text",
+          "help": "$PM_IncreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iTranslateSpeedIncreaseGamePadModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iTranslateSpeedDecreaseGamePad:Controls",
+          "text": "$PM_DecreaseKey_Text",
+          "help": "$PM_DecreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iTranslateSpeedDecreaseGamePadModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "text": "$PM_ViewRollHotkeysGamepad_Header",
+          "type": "header"
+        },
+        {
+          "id": "iViewRollIncreaseGamePad:Controls",
+          "text": "$PM_IncreaseKey_Text",
+          "help": "$PM_IncreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iViewRollIncreaseGamePadModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iViewRollDecreaseGamePad:Controls",
+          "text": "$PM_DecreaseKey_Text",
+          "help": "$PM_DecreaseKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iViewRollDecreaseGamePadModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
             "sourceType": "ModSettingInt"
           }
         }
@@ -362,7 +666,7 @@
           "text": "$PM_MiscKeybinds_GamePad_Header",
           "type": "header"
         },
-         {
+        {
           "id": "iGalleryEnlargeGamePad:Controls",
           "text": "$PM_GalleryEnlarge_Key_Text",
           "type": "keymap",

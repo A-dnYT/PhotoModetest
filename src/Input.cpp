@@ -2,6 +2,7 @@
 
 #include "Gallery/Manager.h"
 #include "MenuIntegration.h"
+#include "PhotoMode/AdjustHotkeys.h"
 #include "PhotoMode/Hotkeys.h"
 #include "PhotoMode/Manager.h"
 #include "Screenshots/Manager.h"
@@ -773,7 +774,14 @@ namespace Input
 				const auto key = buttonEvent->GetIDCode();
 				auto       hotKey = key;
 
-				if (!GetHotKey(event->GetDevice(), hotKey) || (IsInputGamepad() || !cursorOverWindow) && TiltCamera(buttonEvent, hotKey)) {
+				if (!GetHotKey(event->GetDevice(), hotKey)) {
+					continue;
+				}
+
+				// camera value hotkeys (FOV / translate speed / view roll). A consumed key is not passed on to other hotkeys or the UI.
+				const bool adjustConsumed = !io.WantTextInput && PhotoMode::AdjustHotkeys::OnButtonEvent(hotKey, buttonEvent);
+
+				if ((IsInputGamepad() || !cursorOverWindow) && TiltCamera(buttonEvent, hotKey)) {
 					continue;
 				}
 
@@ -802,17 +810,13 @@ namespace Input
 					}
 				}
 
-				if (!io.WantTextInput) {
+				if (!io.WantTextInput && !adjustConsumed) {
 					if (hotKey == hotKeys->TakePhotoKey()) {
 						if (buttonEvent->IsDown()) {
 							QueueScreenshot(hotKey != GetDefaultScreenshotKey());
 						} else if (MANAGER(Screenshot)->AllowMultiScreenshots() && buttonEvent->HeldDuration() > keyHeldDuration) {
 							QueueScreenshot(true);
 						}
-					} else if (hotKey == hotKeys->FOVIncreaseKey()) {
-						PhotoMode::FOVControl::OnButtonEvent(1, buttonEvent);
-					} else if (hotKey == hotKeys->FOVDecreaseKey()) {
-						PhotoMode::FOVControl::OnButtonEvent(-1, buttonEvent);
 					} else if (hotKey == hotKeys->ToggleMenusKey() && buttonEvent->IsDown()) {
 						photoMode->ToggleUI();
 					} else if (!photoMode->IsHidden()) {
@@ -832,7 +836,7 @@ namespace Input
 					}
 				}
 
-				if (!photoMode->IsHidden()) {
+				if (!photoMode->IsHidden() && !adjustConsumed) {
 					if (inputDevice == DEVICE::kKeyboard && hotKey == KEY::kTab) {
 						io.AddKeyEvent(ImGuiKey_Tab, buttonEvent->IsDown());
 					} else {

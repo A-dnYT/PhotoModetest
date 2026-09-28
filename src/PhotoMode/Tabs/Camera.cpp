@@ -1,9 +1,7 @@
 #include "Camera.h"
 
 #include "ImGui/Widgets.h"
-
-#include <algorithm>
-#include <chrono>
+#include "PhotoMode/AdjustHotkeys.h"
 
 namespace PhotoMode
 {
@@ -36,13 +34,13 @@ namespace PhotoMode
 
 	void Camera::GetOriginalState()
 	{
-		FOVControl::Reset();
+		AdjustHotkeys::Reset();
 		originalState.Get();
 	}
 
 	void Camera::RevertState(bool a_deactivate)
 	{
-		FOVControl::Reset();
+		AdjustHotkeys::Reset();
 		originalState.Revert(a_deactivate);
 
 		// revert view roll
@@ -102,75 +100,6 @@ namespace PhotoMode
 
 		// Camera position management
 		cameraPositions.Draw();
-	}
-
-	namespace FOVControl
-	{
-		namespace detail
-		{
-			struct HeldKey
-			{
-				bool                                  held{ false };
-				std::chrono::steady_clock::time_point pressedAt{};
-			};
-
-			inline HeldKey                                increase{};
-			inline HeldKey                                decrease{};
-			inline std::chrono::steady_clock::time_point lastUpdate{};
-
-			void AddFOV(float a_delta)
-			{
-				if (const auto camera = RE::PlayerCamera::GetSingleton()) {
-					camera->worldFOV = std::clamp(camera->worldFOV + a_delta, minFOV, maxFOV);
-				}
-			}
-		}
-
-		void OnButtonEvent(std::int32_t a_direction, const RE::ButtonEvent* a_event)
-		{
-			auto& key = a_direction > 0 ? detail::increase : detail::decrease;
-
-			if (a_event->IsDown()) {
-				// single tap: step immediately
-				detail::AddFOV(static_cast<float>(a_direction) * stepSize);
-				key.held = true;
-				key.pressedAt = std::chrono::steady_clock::now();
-			} else if (a_event->IsUp()) {
-				key.held = false;
-			}
-		}
-
-		void OnFrameUpdate()
-		{
-			const auto now = std::chrono::steady_clock::now();
-			const float deltaTime = detail::lastUpdate.time_since_epoch().count() == 0 ?
-			                            0.0f :
-			                            std::min(std::chrono::duration<float>(now - detail::lastUpdate).count(), 0.1f);
-			detail::lastUpdate = now;
-
-			const auto heldLongEnough = [&](const detail::HeldKey& a_key) {
-				return a_key.held && std::chrono::duration<float>(now - a_key.pressedAt).count() > holdDelay;
-			};
-
-			float direction = 0.0f;
-			if (heldLongEnough(detail::increase)) {
-				direction += 1.0f;
-			}
-			if (heldLongEnough(detail::decrease)) {
-				direction -= 1.0f;
-			}
-
-			if (direction != 0.0f && deltaTime > 0.0f) {
-				detail::AddFOV(direction * holdSpeed * deltaTime);
-			}
-		}
-
-		void Reset()
-		{
-			detail::increase = {};
-			detail::decrease = {};
-			detail::lastUpdate = {};
-		}
 	}
 
 	void CameraGrid::Draw()
