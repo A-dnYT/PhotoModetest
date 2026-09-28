@@ -19,6 +19,7 @@ set(sources ${sources}
 	src/PhotoMode/AdjustHotkeys.cpp
 	src/PhotoMode/Hotkeys.cpp
 	src/PhotoMode/Manager.cpp
+	src/PhotoMode/PanCorrection.cpp
 	src/PhotoMode/Tabs/Camera.cpp
 	src/PhotoMode/Tabs/CameraPositions.cpp
 	src/PhotoMode/Tabs/Character.cpp

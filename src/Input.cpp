@@ -5,6 +5,7 @@
 #include "PhotoMode/AdjustHotkeys.h"
 #include "PhotoMode/Hotkeys.h"
 #include "PhotoMode/Manager.h"
+#include "PhotoMode/PanCorrection.h"
 #include "Screenshots/Manager.h"
 
 namespace Input
@@ -733,6 +734,8 @@ namespace Input
 		bool cursorOverWindow = cursorInit && MANAGER(PhotoMode)->IsCursorHoveringOverWindow();
 
 		for (auto event = *a_evn; event; event = event->next) {
+			PhotoMode::PanCorrection::OnInputEvent(event);
+
 			if (!SetInputDevice(event->GetDevice())) {
 				continue;
 			}

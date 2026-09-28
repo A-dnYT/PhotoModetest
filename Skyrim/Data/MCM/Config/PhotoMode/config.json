@@ -103,6 +103,15 @@
           }
         },
         {
+          "id": "bEqualizePanSpeed:Controls",
+          "text": "$PM_EqualizePanSpeed_Text",
+          "type": "toggle",
+          "help": "$PM_EqualizePanSpeed_Help",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
           "id": "bNavigateWithMouse:Controls",
           "text": "$PM_NavigateWithMouse_Text",
           "type": "toggle",
