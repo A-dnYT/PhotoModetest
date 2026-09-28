@@ -22,6 +22,8 @@ namespace PhotoMode::Hotkeys
 		std::uint32_t        PreviousTabKey() const;
 		std::uint32_t        FreezeTimeKey() const;
 		std::uint32_t        PanCameraKey() const;
+		std::uint32_t        FOVIncreaseKey() const;
+		std::uint32_t        FOVDecreaseKey() const;
 		static std::uint32_t EscapeKey();
 		std::uint32_t        GalleryEnlargeKey() const;
 		std::uint32_t        GalleryDeleteKey() const;
@@ -91,6 +93,8 @@ namespace PhotoMode::Hotkeys
 		Key reset;
 		Key freezeTime;
 		Key panCamera;
+		Key fovIncrease;
+		Key fovDecrease;
 		Key galleryEnlarge;
 		Key galleryDelete;
 		Key galleryLoadScreen;

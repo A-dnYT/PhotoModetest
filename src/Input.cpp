@@ -809,6 +809,10 @@ namespace Input
 						} else if (MANAGER(Screenshot)->AllowMultiScreenshots() && buttonEvent->HeldDuration() > keyHeldDuration) {
 							QueueScreenshot(true);
 						}
+					} else if (hotKey == hotKeys->FOVIncreaseKey()) {
+						PhotoMode::FOVControl::OnButtonEvent(1, buttonEvent);
+					} else if (hotKey == hotKeys->FOVDecreaseKey()) {
+						PhotoMode::FOVControl::OnButtonEvent(-1, buttonEvent);
 					} else if (hotKey == hotKeys->ToggleMenusKey() && buttonEvent->IsDown()) {
 						photoMode->ToggleUI();
 					} else if (!photoMode->IsHidden()) {

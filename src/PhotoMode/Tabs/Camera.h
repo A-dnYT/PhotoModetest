@@ -47,6 +47,22 @@ namespace PhotoMode
 		CameraPositions cameraPositions{};
 	};
 
+	// Hotkey-driven field of view adjustment (iFOVIncreaseKey / iFOVDecreaseKey)
+	namespace FOVControl
+	{
+		inline constexpr float minFOV{ 5.0f };    // same range as the FOV slider
+		inline constexpr float maxFOV{ 150.0f };
+		inline constexpr float holdDelay{ 0.25f };  // seconds before holding a key starts continuous change
+
+		inline float stepSize{ 1.0f };    // fFOVStep:Controls, degrees per key tap
+		inline float holdSpeed{ 30.0f };  // fFOVHoldSpeed:Controls, degrees per second while held
+
+		// a_direction: +1 = increase, -1 = decrease
+		void OnButtonEvent(std::int32_t a_direction, const RE::ButtonEvent* a_event);
+		void OnFrameUpdate();
+		void Reset();
+	}
+
 	namespace CameraGrid
 	{
 		enum GridType : std::uint8_t

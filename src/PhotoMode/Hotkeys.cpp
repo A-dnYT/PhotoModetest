@@ -4,6 +4,7 @@
 #include "ImGui/IconsFonts.h"
 #include "Input.h"
 #include "Manager.h"
+#include "Tabs/Camera.h"
 
 namespace PhotoMode::Hotkeys
 {
@@ -19,6 +20,11 @@ namespace PhotoMode::Hotkeys
 		previousTab.LoadKeys(a_ini, "iPreviousTab");
 		freezeTime.LoadKeys(a_ini, "iFreezeTime");
 		panCamera.LoadKeys(a_ini, "iPanCamera");
+		fovIncrease.LoadKeys(a_ini, "iFOVIncrease");
+		fovDecrease.LoadKeys(a_ini, "iFOVDecrease");
+
+		FOVControl::stepSize = static_cast<float>(a_ini.GetDoubleValue("Controls", "fFOVStep", FOVControl::stepSize));
+		FOVControl::holdSpeed = static_cast<float>(a_ini.GetDoubleValue("Controls", "fFOVHoldSpeed", FOVControl::holdSpeed));
 		galleryEnlarge.LoadKeys(a_ini, "iGalleryEnlarge");
 		galleryDelete.LoadKeys(a_ini, "iGalleryDelete");
 		galleryLoadScreen.LoadKeys(a_ini, "iGalleryLoadScreen");
@@ -170,6 +176,16 @@ namespace PhotoMode::Hotkeys
 	std::uint32_t Manager::PanCameraKey() const
 	{
 		return panCamera.GetKey();
+	}
+
+	std::uint32_t Manager::FOVIncreaseKey() const
+	{
+		return fovIncrease.GetKey();
+	}
+
+	std::uint32_t Manager::FOVDecreaseKey() const
+	{
+		return fovDecrease.GetKey();
 	}
 
 	std::uint32_t Manager::GalleryEnlargeKey() const

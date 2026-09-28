@@ -148,6 +148,7 @@ namespace PhotoMode
 		TogglePlayerControls(false);
 
 		timeTab.OnFrameUpdate();
+		FOVControl::OnFrameUpdate();
 		// IGCSDOF: publish the live camera packet and reconnect if the addon appears late.
 		IGCSBridge::Bridge::GetSingleton()->OnFrameUpdate();
 
