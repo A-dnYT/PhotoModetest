@@ -1,7 +1,8 @@
 #pragma once
 
 // Hotkeys that nudge camera values while Photo Mode is open:
-//   Field of View, Free Camera Translate Speed, View Roll, Global Time Multiplier.
+//   Field of View, Free Camera Translate Speed, View Roll, Global Time Multiplier,
+//   plus actions: Camera Up/Down (hold) and Freeze Time (toggle, iFreezeTimeKey[Modifier] / iFreezeTimeGamePad[Modifier]).
 //
 // Each value has an Increase and a Decrease binding. Every binding has a keyboard
 // combo and a gamepad combo, each made of a primary key plus an optional modifier

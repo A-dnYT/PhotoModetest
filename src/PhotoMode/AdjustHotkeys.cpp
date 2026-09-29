@@ -68,6 +68,12 @@ namespace PhotoMode::AdjustHotkeys
 			bool        holdAction{ false };
 			const char* increaseName{ "Increase" };
 			const char* decreaseName{ "Decrease" };
+
+			// toggle actions (freeze time) run once per press of the "increase" binding; there is no decrease binding
+			using Action = void (*)();
+			Action onPress{ nullptr };
+
+			[[nodiscard]] bool IsAction() const { return holdAction || onPress; }
 		};
 
 		float GetFOV() { return RE::PlayerCamera::GetSingleton()->worldFOV; }
@@ -79,11 +85,17 @@ namespace PhotoMode::AdjustHotkeys
 		float GetViewRoll() { return RE::rad_to_deg(MANAGER(PhotoMode)->GetViewRoll()); }
 		void  SetViewRoll(float a_value) { MANAGER(PhotoMode)->SetViewRoll(RE::deg_to_rad(a_value)); }
 
+		void ToggleFreezeTime()
+		{
+			auto& freezeTime = RE::Main::GetSingleton()->freezeTime;
+			freezeTime = !freezeTime;
+		}
+
 		float GetGlobalTime() { return RE::BSTimer::QGlobalTimeMultiplier(); }
 		void  SetGlobalTime(float a_value) { RE::BSTimer::GetSingleton()->SetGlobalTimeMultiplier(a_value, true); }
 
 		// ranges match the sliders on the Camera and Time tabs
-		std::array<Control, 5> controls{ {
+		std::array<Control, 6> controls{ {
 			{ "FOV", 1.0f, 30.0f, 5.0f, 150.0f, GetFOV, SetFOV,
 				{ { 78, kNone }, { kNone, kNone } },     // Numpad +
 				{ { 74, kNone }, { kNone, kNone } } },   // Numpad -
@@ -101,6 +113,11 @@ namespace PhotoMode::AdjustHotkeys
 				{ { kNone, kNone }, { kNone, kNone } },
 				{ { kNone, kNone }, { kNone, kNone } },
 				true, "Up", "Down" },
+			// freeze time toggle: keeps PhotoMode's existing iFreezeTimeKey / iFreezeTimeGamePad settings
+			{ "FreezeTime", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr,
+				{ { 33, kNone }, { kNone, kNone } },  // F
+				{ { kNone, kNone }, { kNone, kNone } },
+				false, "", "", ToggleFreezeTime },
 		} };
 
 		std::int16_t lastMoveDirection{ 0 };  // vertical direction we last set on the free camera
@@ -131,7 +148,7 @@ namespace PhotoMode::AdjustHotkeys
 
 		void AddToValue(Control& a_control, float a_delta)
 		{
-			if (a_delta == 0.0f || a_control.holdAction) {
+			if (a_delta == 0.0f || a_control.IsAction()) {
 				return;
 			}
 			a_control.set(std::clamp(a_control.get() + a_delta, a_control.min, a_control.max));
@@ -161,7 +178,9 @@ namespace PhotoMode::AdjustHotkeys
 
 				if (nowActive && !a_binding.active) {
 					a_binding.activatedAt = a_now;
-					if (!smoothMode) {
+					if (a_control.onPress) {
+						a_control.onPress();
+					} else if (!smoothMode) {
 						AddToValue(a_control, a_direction * a_control.step);  // tap = one step
 					}
 				}
@@ -172,7 +191,7 @@ namespace PhotoMode::AdjustHotkeys
 		// Move the free camera up/down while the Camera Up/Down hotkeys are held.
 		void UpdateCameraMove()
 		{
-			const auto& move = controls.back();
+			const auto& move = *std::ranges::find_if(controls, [](const Control& a_control) { return a_control.holdAction; });
 			const auto  direction = static_cast<std::int16_t>((move.increase.active ? 1 : 0) - (move.decrease.active ? 1 : 0));
 			if (direction == 0 && lastMoveDirection == 0) {
 				return;  // not ours: leave the game's own up/down buttons alone
@@ -211,6 +230,9 @@ namespace PhotoMode::AdjustHotkeys
 
 			control.increase.keyboard.Load(a_ini, "i" + name + inc + "Key");
 			control.increase.gamePad.Load(a_ini, "i" + name + inc + "GamePad");
+			if (control.onPress) {
+				continue;  // single binding, no step/speed settings
+			}
 			control.decrease.keyboard.Load(a_ini, "i" + name + dec + "Key");
 			control.decrease.gamePad.Load(a_ini, "i" + name + dec + "GamePad");
 
@@ -262,7 +284,7 @@ namespace PhotoMode::AdjustHotkeys
 		}
 
 		for (auto& control : controls) {
-			if (control.holdAction) {
+			if (control.IsAction()) {
 				continue;
 			}
 			float direction = 0.0f;
