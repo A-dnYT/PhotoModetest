@@ -113,6 +113,30 @@
           }
         },
         {
+          "id": "iPanCameraKeyModifier:Controls",
+          "text": "$PM_ModifierKey_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iPanCameraMode:Controls",
+          "text": "$PM_PanCameraMode_Text",
+          "help": "$PM_PanCameraMode_Help",
+          "type": "enum",
+          "valueOptions": {
+            "options": [
+              "$PM_PanMode_Hold",
+              "$PM_PanMode_Toggle",
+              "$PM_PanMode_Always"
+            ],
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
           "id": "bEqualizePanSpeed:Controls",
           "text": "$PM_EqualizePanSpeed_Text",
           "type": "toggle",

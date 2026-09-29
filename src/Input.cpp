@@ -768,6 +768,22 @@ namespace Input
 				MANAGER(PhotoMode)->UpdateKeyboardFocus();
 			}
 
+			// mouse panning (hide the cursor so the mouse turns the camera), see iPanCameraMode
+			const auto updateMousePan = [&]() {
+				if (!canNavigateWithMouse) {
+					return;
+				}
+				const bool pan = PhotoMode::AdjustHotkeys::ShouldMousePan(panCamera, cursorOverWindow);
+				if (pan && !panCamera) {
+					ToggleCursor(false);
+					panCamera = true;
+				} else if (!pan && panCamera) {
+					ToggleCursor(true);
+					panCamera = false;
+				}
+			};
+			updateMousePan();
+
 			// process inputs
 			if (const auto charEvent = event->AsCharEvent()) {
 				if (!io.KeyCtrl) {
@@ -783,23 +799,10 @@ namespace Input
 
 				// camera value hotkeys (FOV / translate speed / view roll). A consumed key is not passed on to other hotkeys or the UI.
 				const bool adjustConsumed = !io.WantTextInput && PhotoMode::AdjustHotkeys::OnButtonEvent(hotKey, buttonEvent);
+				updateMousePan();
 
 				if ((IsInputGamepad() || !cursorOverWindow) && TiltCamera(buttonEvent, hotKey)) {
 					continue;
-				}
-
-				if (canNavigateWithMouse && hotKey == hotKeys->PanCameraKey()) {
-					if (buttonEvent->IsHeld()) {
-						if (!cursorOverWindow) {
-							if (!panCamera) {
-								ToggleCursor(false);
-								panCamera = true;
-							}
-						}
-					} else if (panCamera) {
-						ToggleCursor(true);
-						panCamera = false;
-					}
 				}
 
 				if (hotKey == hotKeys->EscapeKey()) {

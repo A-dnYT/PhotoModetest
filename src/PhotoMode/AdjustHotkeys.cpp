@@ -73,7 +73,10 @@ namespace PhotoMode::AdjustHotkeys
 			using Action = void (*)();
 			Action onPress{ nullptr };
 
-			[[nodiscard]] bool IsAction() const { return holdAction || onPress; }
+			// the mouse pan key: tracked here for combos, but never swallowed (the UI still sees e.g. Shift)
+			bool panAction{ false };
+
+			[[nodiscard]] bool IsAction() const { return holdAction || onPress || panAction; }
 		};
 
 		float GetFOV() { return RE::PlayerCamera::GetSingleton()->worldFOV; }
@@ -95,7 +98,7 @@ namespace PhotoMode::AdjustHotkeys
 		void  SetGlobalTime(float a_value) { RE::BSTimer::GetSingleton()->SetGlobalTimeMultiplier(a_value, true); }
 
 		// ranges match the sliders on the Camera and Time tabs
-		std::array<Control, 6> controls{ {
+		std::array<Control, 7> controls{ {
 			{ "FOV", 1.0f, 30.0f, 5.0f, 150.0f, GetFOV, SetFOV,
 				{ { 78, kNone }, { kNone, kNone } },     // Numpad +
 				{ { 74, kNone }, { kNone, kNone } } },   // Numpad -
@@ -118,7 +121,27 @@ namespace PhotoMode::AdjustHotkeys
 				{ { 33, kNone }, { kNone, kNone } },  // F
 				{ { kNone, kNone }, { kNone, kNone } },
 				false, "", "", ToggleFreezeTime },
+			// mouse pan key: keeps PhotoMode's existing iPanCameraKey setting, adds iPanCameraKeyModifier
+			{ "PanCamera", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr,
+				{ { 42, kNone }, { kNone, kNone } },  // Left Shift
+				{ { kNone, kNone }, { kNone, kNone } },
+				false, "", "", nullptr, true },
 		} };
+
+		enum PanMode : std::int32_t
+		{
+			kPanHold = 0,    // hold the pan key to pan
+			kPanToggle = 1,  // press the pan key to switch panning on / off
+			kPanAlways = 2   // mouse always pans; hold the pan key to show the cursor
+		};
+
+		std::int32_t panMode{ kPanHold };
+		bool         panToggledOn{ false };
+
+		Control& PanControl()
+		{
+			return *std::ranges::find_if(controls, [](const Control& a_control) { return a_control.panAction; });
+		}
 
 		std::int16_t lastMoveDirection{ 0 };  // vertical direction we last set on the free camera
 
@@ -178,7 +201,9 @@ namespace PhotoMode::AdjustHotkeys
 
 				if (nowActive && !a_binding.active) {
 					a_binding.activatedAt = a_now;
-					if (a_control.onPress) {
+					if (a_control.panAction) {
+						panToggledOn = !panToggledOn;
+					} else if (a_control.onPress) {
 						a_control.onPress();
 					} else if (!smoothMode) {
 						AddToValue(a_control, a_direction * a_control.step);  // tap = one step
@@ -209,8 +234,8 @@ namespace PhotoMode::AdjustHotkeys
 		bool IsPrimaryOfActiveBinding(std::uint32_t a_key)
 		{
 			bool result = false;
-			ForEachBinding([&](Control&, Binding& a_binding, float) {
-				if (a_binding.active && a_binding.matched && static_cast<std::uint32_t>(a_binding.matched->primary) == a_key) {
+			ForEachBinding([&](Control& a_control, Binding& a_binding, float) {
+				if (!a_control.panAction && a_binding.active && a_binding.matched && static_cast<std::uint32_t>(a_binding.matched->primary) == a_key) {
 					result = true;
 				}
 			});
@@ -221,6 +246,7 @@ namespace PhotoMode::AdjustHotkeys
 	void LoadSettings(const CSimpleIniA& a_ini)
 	{
 		smoothMode = a_ini.GetBoolValue("Controls", "bSmoothHotkeyAdjust", smoothMode);
+		panMode = std::clamp(static_cast<std::int32_t>(a_ini.GetLongValue("Controls", "iPanCameraMode", panMode)), 0, 2);
 
 		for (auto& control : controls) {
 			const std::string name{ control.name };
@@ -230,7 +256,7 @@ namespace PhotoMode::AdjustHotkeys
 
 			control.increase.keyboard.Load(a_ini, "i" + name + inc + "Key");
 			control.increase.gamePad.Load(a_ini, "i" + name + inc + "GamePad");
-			if (control.onPress) {
+			if (control.onPress || control.panAction) {
 				continue;  // single binding, no step/speed settings
 			}
 			control.decrease.keyboard.Load(a_ini, "i" + name + dec + "Key");
@@ -297,8 +323,23 @@ namespace PhotoMode::AdjustHotkeys
 		}
 	}
 
+	bool ShouldMousePan(bool a_panning, bool a_cursorOverWindow)
+	{
+		const bool keyHeld = PanControl().increase.active;
+		switch (panMode) {
+		case kPanToggle:
+			return panToggledOn;
+		case kPanAlways:
+			return !keyHeld;
+		default:
+			// start only when the cursor isn't over the menu; once panning, keep going until the key is released
+			return keyHeld && (a_panning || !a_cursorOverWindow);
+		}
+	}
+
 	void Reset()
 	{
+		panToggledOn = false;
 		pressedKeys.clear();
 		ForEachBinding([](Control&, Binding& a_binding, float) {
 			a_binding.matched = nullptr;

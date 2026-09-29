@@ -30,6 +30,10 @@ namespace PhotoMode::AdjustHotkeys
 
 	void OnFrameUpdate();
 
+	// Whether the mouse should currently pan the camera (cursor hidden), based on iPanCameraMode
+	// (0 = hold the pan key, 1 = toggle with the pan key, 2 = always, hold the pan key for the cursor).
+	bool ShouldMousePan(bool a_panning, bool a_cursorOverWindow);
+
 	// Forget all pressed keys (called when Photo Mode opens / resets / closes).
 	void Reset();
 }
