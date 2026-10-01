@@ -296,9 +296,11 @@ namespace PhotoMode::CameraModes
 			static inline constexpr std::size_t            idx{ 0x30 };  // NiAVObject::UpdateWorldData
 		};
 
-		// Photo Cam: while Level Movement is held, the free camera moves as if it were looking straight ahead (its
-		// forward / back movement follows its pitch), so moving stays horizontal. Looking up / down still works: the
-		// change the game makes to the pitch during the update is kept.
+		// Photo Cam: while Level Movement is held, the free camera's update runs as if it were looking straight ahead
+		// (its forward / back movement follows its pitch), so moving stays horizontal at the normal speed. The real pitch
+		// is put back straight after, keeping any looking up / down done this frame. The update also places the rendered
+		// camera with the pitch it saw, so the camera node is put back on the real view afterwards (otherwise the view
+		// snaps level while the key is held).
 		struct FreeCameraUpdate
 		{
 			static void thunk(RE::FreeCameraState* a_this, RE::BSTSmartPointer<RE::TESCameraState>& a_nextState)
@@ -312,6 +314,21 @@ namespace PhotoMode::CameraModes
 				const float lookChange = WrapSigned(a_this->rotation.x);  // whatever the player turned up / down this frame
 				const float limit = std::max(std::abs(savedPitch), kPitchLimit);
 				a_this->rotation.x = WrapUnsigned(std::clamp(savedPitch + lookChange, -limit, limit));
+
+				// rendered camera: same as the game does it, from the camera's own GetRotation / GetTranslation
+				// (so view roll and the other Photo Mode overrides still apply)
+				const auto camera = RE::PlayerCamera::GetSingleton();
+				const auto root = camera ? camera->cameraRoot.get() : nullptr;
+				if (root) {
+					RE::NiQuaternion rotation;
+					a_this->GetRotation(rotation);
+					RE::NiPoint3 translation;
+					a_this->GetTranslation(translation);
+					root->local.rotate = rotation.ToRotation();
+					root->local.translate = translation;
+					RE::NiUpdateData updateData{};
+					root->Update(updateData);
+				}
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 			static inline constexpr std::size_t            idx{ 0x03 };  // TESCameraState::Update
