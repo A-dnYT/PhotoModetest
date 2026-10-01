@@ -270,6 +270,14 @@ if (COPY_BUILD)
 			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${SkyrimPath}/SKSE/Plugins/
 			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PDB_FILE:${PROJECT_NAME}> ${SkyrimPath}/SKSE/Plugins/
 		)
+		# The mod's data files (MCM menu, translations, scripts, ...) go to the same place on every build, even when
+		# only they changed and the DLL didn't need rebuilding.
+		add_custom_target(
+			${PROJECT_NAME}_CopyData ALL
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Skyrim/Data ${SkyrimPath}
+			COMMENT "Copying mod data files to ${SkyrimPath}"
+			VERBATIM
+		)
 	else ()
 		message(
 			WARNING
