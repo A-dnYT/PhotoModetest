@@ -4,6 +4,7 @@
 #include "Manager.h"
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <numbers>
@@ -44,6 +45,16 @@ namespace PhotoMode::CameraModes
 		RE::NiPoint2 leftStick{};
 		bool         gameUpHeld{ false };    // the game's own controller camera up / down buttons
 		bool         gameDownHeld{ false };
+		// diagnostics (written to po3_PhotoMode.log once a second while in a cinematic mode)
+		struct
+		{
+			std::uint32_t getRotation{ 0 };
+			std::uint32_t getTranslation{ 0 };
+			std::uint32_t niCameraUpdate{ 0 };
+			std::uint32_t frames{ 0 };
+		} diag;
+		Clock::time_point lastDiagLog{};
+
 		RE::NiPoint3 lastPlayerPosition{};
 		bool         lastPlayerPositionValid{ false };
 		bool         pendingFreeCameraPose{ false };  // copy the cinematic pose into the free camera once it is active
@@ -77,6 +88,35 @@ namespace PhotoMode::CameraModes
 		bool OverrideActive()
 		{
 			return mode != kPhoto && MANAGER(PhotoMode)->IsActive();
+		}
+
+		const char* StateName(const RE::PlayerCamera* a_camera)
+		{
+			static constexpr std::array names{ "FirstPerson", "AutoVanity", "VATS", "Free", "IronSights", "Furniture", "Transition",
+				"Tween", "Animated", "ThirdPerson", "Mount", "Bleedout", "Dragon" };
+			if (!a_camera || !a_camera->currentState) {
+				return "none";
+			}
+			const auto id = static_cast<std::uint32_t>(a_camera->currentState->id);
+			return id < names.size() ? names[id] : "?";
+		}
+
+		void LogDiagnostics()
+		{
+			const auto camera = RE::PlayerCamera::GetSingleton();
+			const auto root = camera ? camera->cameraRoot.get() : nullptr;
+			const auto player = RE::PlayerCharacter::GetSingleton();
+			const auto niCamera = RE::Main::WorldRootCamera();
+			const auto rootPos = root ? root->world.translate : RE::NiPoint3{};
+			const auto renderPos = niCamera ? niCamera->world.translate : RE::NiPoint3{};
+			const auto playerPos = player ? player->GetPosition() : RE::NiPoint3{};
+			REX::INFO("[CameraModes] mode {} state {} | per second: frames {} GetRotation {} GetTranslation {} NiCamera update {} | world camera under camera node: {}",
+				static_cast<std::uint32_t>(mode), StateName(camera), diag.frames, diag.getRotation, diag.getTranslation, diag.niCameraUpdate,
+				niCamera && root && niCamera->parent == root ? "directly" : "no / not directly");
+			REX::INFO("[CameraModes]   wanted ({:.0f}, {:.0f}, {:.0f}) | camera node ({:.0f}, {:.0f}, {:.0f}) | rendered camera ({:.0f}, {:.0f}, {:.0f}) | player ({:.0f}, {:.0f}, {:.0f})",
+				position.x, position.y, position.z, rootPos.x, rootPos.y, rootPos.z,
+				renderPos.x, renderPos.y, renderPos.z, playerPos.x, playerPos.y, playerPos.z);
+			diag = {};
 		}
 
 		void DisableViewControls()
@@ -189,7 +229,9 @@ namespace PhotoMode::CameraModes
 		{
 			static void thunk(State* a_this, RE::NiQuaternion& a_rotation)
 			{
-				if (!OverrideRotation(a_rotation)) {
+				if (OverrideRotation(a_rotation)) {
+					++diag.getRotation;
+				} else {
 					func(a_this, a_rotation);
 				}
 			}
@@ -202,7 +244,9 @@ namespace PhotoMode::CameraModes
 		{
 			static void thunk(State* a_this, RE::NiPoint3& a_translation)
 			{
-				if (!OverrideTranslation(a_translation)) {
+				if (OverrideTranslation(a_translation)) {
+					++diag.getTranslation;
+				} else {
 					func(a_this, a_translation);
 				}
 			}
@@ -210,48 +254,46 @@ namespace PhotoMode::CameraModes
 			static inline constexpr std::size_t            idx{ 0x05 };  // TESCameraState::GetTranslation
 		};
 
-		// After the game's whole camera update: put the camera node where the cinematic camera is. The player camera
-		// states don't take their rendered position from GetTranslation, so this is what actually pins the position.
-		struct PlayerCameraUpdate
+		// The rendered position. PlayerCamera::Update isn't virtual (so it can't be hooked through the vtable) and the
+		// third-person states set the camera node's position themselves rather than through GetTranslation, so the
+		// position is pinned on the game's camera itself: whenever the world camera (the NiCamera under the player
+		// camera node) recomputes its transform, its parent - the camera node - is first put on the cinematic camera.
+		// Every path that moves the camera has to go through this before it is rendered.
+		struct NiCameraUpdateWorldData
 		{
-			static void thunk(RE::PlayerCamera* a_this)
+			static void thunk(RE::NiCamera* a_this, RE::NiUpdateData* a_data)
 			{
-				func(a_this);
-
-				if (!OverrideActive()) {
-					return;
-				}
-				const auto root = a_this->cameraRoot.get();
-				if (!root) {
-					return;
-				}
-				RE::NiQuaternion rotation;
-				if (OverrideRotation(rotation)) {
-					root->local.rotate = rotation.ToRotation();
-				}
-				root->local.translate = position;
-
-				RE::NiUpdateData updateData{};
-				root->Update(updateData);
-			}
-			static inline REL::Relocation<decltype(thunk)> func;
-			static inline constexpr std::size_t            idx{ 0x02 };  // TESCamera::Update
-		};
-
-		// Backup for the PlayerCameraUpdate hook: after a third-person state's own update, keep its position on the
-		// cinematic camera (ThirdPersonState::translation is where its camera position is kept).
-		template <class State>
-		struct ThirdPersonUpdate
-		{
-			static void thunk(State* a_this, RE::BSTSmartPointer<RE::TESCameraState>& a_nextState)
-			{
-				func(a_this, a_nextState);
 				if (OverrideActive()) {
-					a_this->translation = position;
+					const auto camera = RE::PlayerCamera::GetSingleton();
+					const auto root = camera ? camera->cameraRoot.get() : nullptr;
+
+					// nodes between the camera node and this camera (normally none: the camera is a direct child)
+					std::array<RE::NiNode*, 8> between{};
+					std::size_t                count = 0;
+					auto                       node = a_this->parent;
+					while (node && node != root && count < between.size()) {
+						between[count++] = node;
+						node = node->parent;
+					}
+
+					if (root && node == root) {
+						++diag.niCameraUpdate;
+						RE::NiQuaternion rotation;
+						if (OverrideRotation(rotation)) {
+							root->local.rotate = rotation.ToRotation();
+							root->world.rotate = root->local.rotate;
+						}
+						root->local.translate = position;
+						root->world.translate = position;
+						for (auto i = count; i-- > 0;) {
+							between[i]->world = between[i]->parent->world * between[i]->local;
+						}
+					}
 				}
+				func(a_this, a_data);
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
-			static inline constexpr std::size_t            idx{ 0x03 };  // TESCameraState::Update
+			static inline constexpr std::size_t            idx{ 0x30 };  // NiAVObject::UpdateWorldData
 		};
 
 		template <class State>
@@ -259,9 +301,6 @@ namespace PhotoMode::CameraModes
 		{
 			stl::write_vfunc<State, GetRotation<State>>();
 			stl::write_vfunc<State, GetTranslation<State>>();
-			if constexpr (std::is_base_of_v<RE::ThirdPersonState, State>) {
-				stl::write_vfunc<State, ThirdPersonUpdate<State>>();
-			}
 		}
 
 		// ---- controller does not control the player in the cinematic modes ----
@@ -428,7 +467,7 @@ namespace PhotoMode::CameraModes
 		InstallStateHooks<RE::AutoVanityState>();
 		InstallStateHooks<RE::PlayerCameraTransitionState>();
 
-		stl::write_vfunc<RE::PlayerCamera, PlayerCameraUpdate>();
+		stl::write_vfunc<RE::NiCamera, NiCameraUpdateWorldData>();
 		stl::write_vfunc<RE::PlayerControls, PlayerControlsInput>();
 
 		REX::INFO("Installed camera mode hooks");
@@ -468,6 +507,8 @@ namespace PhotoMode::CameraModes
 			return;
 		}
 
+		REX::INFO("[CameraModes] switch {} -> {} (camera state before: {})", static_cast<std::uint32_t>(mode), static_cast<std::uint32_t>(a_mode), StateName(camera));
+
 		if (mode == kPhoto) {
 			// Photo Cam -> cinematic: keep the camera where it is, hand the player camera back to the player
 			CaptureFreeCameraPose();
@@ -486,6 +527,8 @@ namespace PhotoMode::CameraModes
 			ApplyPendingFreeCameraPose();
 		}
 		// cinematic -> cinematic: same camera position, just different behaviour
+
+		REX::INFO("[CameraModes]   camera state after switching: {}", StateName(camera));
 
 		mode = a_mode;
 		rightStick = {};
@@ -537,6 +580,12 @@ namespace PhotoMode::CameraModes
 		}
 
 		LeaveFirstPerson();  // e.g. the game switched to first person on its own
+
+		++diag.frames;
+		if (now - lastDiagLog > std::chrono::seconds(1)) {
+			lastDiagLog = now;
+			LogDiagnostics();
+		}
 
 		CarryWithPlayer();
 
