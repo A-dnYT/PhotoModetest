@@ -12,6 +12,10 @@
 // controller does not control the player in these modes (it is left to the camera and the hotkeys).
 // FOV, view roll, time and the other Photo Mode settings keep working in every mode.
 //
+// Moving the camera: with bMoveCameraOnFreeze / bMoveCameraOnRelease / bMoveCameraOnFollow on, the controller's
+// left stick moves the cinematic camera (forward/back/sideways where it faces) and the Move Up / Move Down hotkeys
+// and the game's own controller up/down buttons raise / lower it, at Photo Mode's Camera Speed.
+//
 // Settings ([Controls]): fReleasePanSpeed, fFollowYawSpeed, fFollowPitchSpeed, fFollowHeightOffset,
 // and the mode hotkeys iPhotoCam* / iFreezeCam* / iReleaseCam* / iFollowCam* (handled in AdjustHotkeys).
 
@@ -41,8 +45,11 @@ namespace PhotoMode::CameraModes
 	// Switch to a mode (no toggling: switching to the current mode does nothing).
 	void SetMode(Mode a_mode);
 
-	// Right stick for Release Cam (called for every input event while Photo Mode is open).
+	// Sticks for Release Cam panning / camera movement (called for every input event while Photo Mode is open).
 	void OnInputEvent(const RE::InputEvent* a_event);
+
+	// The game's own (controller) camera up / down buttons, while in a cinematic mode.
+	void SetGameVerticalInput(bool a_up, bool a_pressed);
 
 	// Once per rendered frame while Photo Mode is open.
 	void OnFrameUpdate();

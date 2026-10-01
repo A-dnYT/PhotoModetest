@@ -161,39 +161,50 @@ namespace Input
 
 	bool Manager::TiltCamera(const RE::ButtonEvent* a_buttonEvent, std::uint32_t a_key) const
 	{
-		if (!useGameCameraUpDown || !RE::PlayerCamera::GetSingleton()->IsInFreeCameraMode()) {
+		if (!useGameCameraUpDown) {
 			return false;
 		}
 
-		if (auto device = a_buttonEvent->GetDevice(); device != RE::INPUT_DEVICE::kMouse && device != RE::INPUT_DEVICE::kGamepad) {
+		const auto device = a_buttonEvent->GetDevice();
+		if (device != RE::INPUT_DEVICE::kMouse && device != RE::INPUT_DEVICE::kGamepad) {
 			return false;
 		}
 
-		if (const auto freeCameraState = static_cast<RE::FreeCameraState*>(RE::PlayerCamera::GetSingleton()->currentState.get())) {
-			const auto getKey = [this](std::string_view action, RE::INPUT_DEVICE device) {
-				auto key = RE::ControlMap::GetSingleton()->GetMappedKey(action, device, RE::UserEvents::INPUT_CONTEXT_ID::kTFCMode);
-				GetHotKey(device, key);
-				return key;
-			};
+		const auto getKey = [this](std::string_view action, RE::INPUT_DEVICE a_device) {
+			auto key = RE::ControlMap::GetSingleton()->GetMappedKey(action, a_device, RE::UserEvents::INPUT_CONTEXT_ID::kTFCMode);
+			GetHotKey(a_device, key);
+			return key;
+		};
 
-			static auto mouseUp = getKey("WorldZUp", RE::INPUT_DEVICE::kMouse);
-			static auto mouseDown = getKey("WorldZDown", RE::INPUT_DEVICE::kMouse);
-			static auto gamepadUp = getKey("WorldZUp", RE::INPUT_DEVICE::kGamepad);
-			static auto gamepadDown = getKey("WorldZDown", RE::INPUT_DEVICE::kGamepad);
+		static auto mouseUp = getKey("WorldZUp", RE::INPUT_DEVICE::kMouse);
+		static auto mouseDown = getKey("WorldZDown", RE::INPUT_DEVICE::kMouse);
+		static auto gamepadUp = getKey("WorldZUp", RE::INPUT_DEVICE::kGamepad);
+		static auto gamepadDown = getKey("WorldZDown", RE::INPUT_DEVICE::kGamepad);
 
-			if (a_key == mouseUp || a_key == gamepadUp) {
-				bool released = !(a_buttonEvent->value != 0.0 || a_buttonEvent->heldDownSecs < 0.0);
-				freeCameraState->verticalDirection = static_cast<std::uint16_t>(!released);
-				return true;
+		const bool isUp = a_key == mouseUp || a_key == gamepadUp;
+		const bool isDown = a_key == mouseDown || a_key == gamepadDown;
+		if (!isUp && !isDown) {
+			return false;
+		}
+		const bool pressed = a_buttonEvent->value != 0.0f || a_buttonEvent->heldDownSecs < 0.0f;
+
+		// Freeze / Release / Follow cam: the controller's up/down buttons move the cinematic camera
+		// (keyboard & mouse belong to the player there)
+		if (PhotoMode::CameraModes::IsCinematic()) {
+			if (device != RE::INPUT_DEVICE::kGamepad) {
+				return false;
 			}
-			if (a_key == mouseDown || a_key == gamepadDown) {
-				if (a_buttonEvent->value == 0.0 && a_buttonEvent->heldDownSecs >= 0.0) {
-					freeCameraState->verticalDirection = 0;
-				} else {
-					freeCameraState->verticalDirection = -1;
-				}
-				return true;
-			}
+			PhotoMode::CameraModes::SetGameVerticalInput(isUp, pressed);
+			return true;
+		}
+
+		const auto camera = RE::PlayerCamera::GetSingleton();
+		if (!camera->IsInFreeCameraMode()) {
+			return false;
+		}
+		if (const auto freeCameraState = static_cast<RE::FreeCameraState*>(camera->currentState.get())) {
+			freeCameraState->verticalDirection = static_cast<std::int16_t>(pressed ? (isUp ? 1 : -1) : 0);
+			return true;
 		}
 
 		return false;

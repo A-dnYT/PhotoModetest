@@ -35,6 +35,9 @@ namespace PhotoMode::AdjustHotkeys
 	// (0 = hold the pan key, 1 = toggle with the pan key, 2 = always, hold the pan key for the cursor).
 	bool ShouldMousePan(bool a_panning, bool a_cursorOverWindow);
 
+	// Move Up / Move Down hotkeys: 1 = up held, -1 = down held, 0 = neither (or both).
+	int GetCameraMoveDirection();
+
 	// Whether a key (SKSE keycode) is currently held. Used for the modifiers of PhotoMode's other hotkeys.
 	bool IsKeyHeld(std::int32_t a_key);
 

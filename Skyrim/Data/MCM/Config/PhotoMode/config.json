@@ -1114,6 +1114,37 @@
           }
         },
         {
+          "text": "$PM_MoveCamera_Header",
+          "type": "header"
+        },
+        {
+          "id": "bMoveCameraOnFreeze:Controls",
+          "text": "$PM_MoveCameraOnFreeze_Text",
+          "type": "toggle",
+          "help": "$PM_MoveCamera_Help",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
+          "id": "bMoveCameraOnRelease:Controls",
+          "text": "$PM_MoveCameraOnRelease_Text",
+          "type": "toggle",
+          "help": "$PM_MoveCamera_Help",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
+          "id": "bMoveCameraOnFollow:Controls",
+          "text": "$PM_MoveCameraOnFollow_Text",
+          "type": "toggle",
+          "help": "$PM_MoveCamera_Help",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
           "text": "$PM_ReleaseCamSettings_Header",
           "type": "header"
         },

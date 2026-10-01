@@ -378,6 +378,12 @@ namespace PhotoMode::AdjustHotkeys
 		}
 	}
 
+	int GetCameraMoveDirection()
+	{
+		const auto& move = *std::ranges::find_if(controls, [](const Control& a_control) { return a_control.holdAction; });
+		return (move.increase.active ? 1 : 0) - (move.decrease.active ? 1 : 0);
+	}
+
 	bool IsKeyHeld(std::int32_t a_key)
 	{
 		return IsPressed(a_key);

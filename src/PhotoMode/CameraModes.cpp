@@ -1,5 +1,6 @@
 #include "CameraModes.h"
 
+#include "AdjustHotkeys.h"
 #include "Manager.h"
 
 #include <algorithm>
@@ -25,6 +26,11 @@ namespace PhotoMode::CameraModes
 		float followYawSpeed{ 4.0f };        // how quickly Follow Cam turns sideways (higher = snappier)
 		float followPitchSpeed{ 4.0f };      // how quickly Follow Cam turns up / down
 		float followHeightOffset{ 100.0f };  // aim point above the player's feet (game units)
+		bool  moveCameraOnFreeze{ false };   // left stick / up-down move the camera in each cinematic mode
+		bool  moveCameraOnRelease{ false };
+		bool  moveCameraOnFollow{ false };
+
+		constexpr float kUnitsPerCameraSpeed = 100.0f;  // camera movement: game units per second per point of Camera Speed
 
 		// state
 		Mode         mode{ kPhoto };
@@ -32,6 +38,9 @@ namespace PhotoMode::CameraModes
 		float        pitch{ 0.0f };  // -pi..pi, positive looks down (free camera convention)
 		float        yaw{ 0.0f };
 		RE::NiPoint2 rightStick{};
+		RE::NiPoint2 leftStick{};
+		bool         gameUpHeld{ false };    // the game's own controller camera up / down buttons
+		bool         gameDownHeld{ false };
 		bool         pendingFreeCameraPose{ false };  // copy the cinematic pose into the free camera once it is active
 		bool         forcedThirdPerson{ false };      // we left first person to show the player
 		Clock::time_point lastUpdate{};
@@ -259,6 +268,45 @@ namespace PhotoMode::CameraModes
 			pitch = std::clamp(pitch - y * speed, -kPitchLimit, kPitchLimit);  // stick up looks up
 		}
 
+		bool CanMoveCamera()
+		{
+			switch (mode) {
+			case kFreeze:
+				return moveCameraOnFreeze;
+			case kRelease:
+				return moveCameraOnRelease;
+			case kFollow:
+				return moveCameraOnFollow;
+			default:
+				return false;
+			}
+		}
+
+		// Fly the cinematic camera like the free camera: left stick = forward / back / sideways where it is facing,
+		// Move Up / Move Down hotkeys and the game's controller up/down buttons = straight up / down.
+		void MoveCamera(float a_deltaTime)
+		{
+			const float forwardInput = std::abs(leftStick.y) > kStickDeadzone ? leftStick.y : 0.0f;
+			const float sideInput = std::abs(leftStick.x) > kStickDeadzone ? leftStick.x : 0.0f;
+			int         vertical = AdjustHotkeys::GetCameraMoveDirection();
+			vertical += (gameUpHeld ? 1 : 0) - (gameDownHeld ? 1 : 0);
+			const float verticalInput = static_cast<float>(std::clamp(vertical, -1, 1));
+
+			if (forwardInput == 0.0f && sideInput == 0.0f && verticalInput == 0.0f) {
+				return;
+			}
+
+			const float distance = std::max(FreeCamera::translateSpeed, 0.0f) * kUnitsPerCameraSpeed * a_deltaTime;
+
+			// same axes as the free camera: forward = (sin yaw cos pitch, cos yaw cos pitch, -sin pitch), right = (cos yaw, -sin yaw, 0)
+			const RE::NiPoint3 forward{ std::sin(yaw) * std::cos(pitch), std::cos(yaw) * std::cos(pitch), -std::sin(pitch) };
+			const RE::NiPoint3 right{ std::cos(yaw), -std::sin(yaw), 0.0f };
+
+			position.x += (forward.x * forwardInput + right.x * sideInput) * distance;
+			position.y += (forward.y * forwardInput + right.y * sideInput) * distance;
+			position.z += (forward.z * forwardInput + verticalInput) * distance;
+		}
+
 		void UpdateFollow(float a_deltaTime)
 		{
 			const auto player = RE::PlayerCharacter::GetSingleton();
@@ -308,6 +356,9 @@ namespace PhotoMode::CameraModes
 		followYawSpeed = static_cast<float>(a_ini.GetDoubleValue("Controls", "fFollowYawSpeed", followYawSpeed));
 		followPitchSpeed = static_cast<float>(a_ini.GetDoubleValue("Controls", "fFollowPitchSpeed", followPitchSpeed));
 		followHeightOffset = static_cast<float>(a_ini.GetDoubleValue("Controls", "fFollowHeightOffset", followHeightOffset));
+		moveCameraOnFreeze = a_ini.GetBoolValue("Controls", "bMoveCameraOnFreeze", moveCameraOnFreeze);
+		moveCameraOnRelease = a_ini.GetBoolValue("Controls", "bMoveCameraOnRelease", moveCameraOnRelease);
+		moveCameraOnFollow = a_ini.GetBoolValue("Controls", "bMoveCameraOnFollow", moveCameraOnFollow);
 	}
 
 	Mode GetMode()
@@ -351,6 +402,9 @@ namespace PhotoMode::CameraModes
 
 		mode = a_mode;
 		rightStick = {};
+		leftStick = {};
+		gameUpHeld = false;
+		gameDownHeld = false;
 		RE::SendHUDMessage::ShowHUDMessage(TRANSLATE(modeNames[a_mode]));
 	}
 
@@ -360,8 +414,15 @@ namespace PhotoMode::CameraModes
 			const auto stick = static_cast<const RE::ThumbstickEvent*>(a_event);
 			if (stick->IsRight()) {
 				rightStick = { stick->xValue, stick->yValue };
+			} else {
+				leftStick = { stick->xValue, stick->yValue };
 			}
 		}
+	}
+
+	void SetGameVerticalInput(bool a_up, bool a_pressed)
+	{
+		(a_up ? gameUpHeld : gameDownHeld) = a_pressed;
 	}
 
 	void OnFrameUpdate()
@@ -397,7 +458,12 @@ namespace PhotoMode::CameraModes
 			UpdateFollow(deltaTime);
 			break;
 		default:
-			break;  // Freeze: nothing moves
+			break;  // Freeze: the camera doesn't turn
+		}
+
+		// move first, then Follow re-aims at the player next frame from the new position
+		if (CanMoveCamera()) {
+			MoveCamera(deltaTime);
 		}
 	}
 
@@ -405,6 +471,9 @@ namespace PhotoMode::CameraModes
 	{
 		mode = kPhoto;
 		rightStick = {};
+		leftStick = {};
+		gameUpHeld = false;
+		gameDownHeld = false;
 		pendingFreeCameraPose = false;
 		forcedThirdPerson = false;
 		lastUpdate = {};
