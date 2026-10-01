@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "PhotoMode/AdjustHotkeys.h"
 #include "IconsFonts.h"
 #include "Styles.h"
 
@@ -137,6 +138,13 @@ namespace ImGui::Renderer
 			}
 
 			const auto photoMode = MANAGER(PhotoMode);
+
+			// hotkey holds / camera up-down / timeouts: here rather than in HUDMenu::PostDisplay, which doesn't run
+			// while the Photo Mode UI (and so the HUD) is hidden
+			if (photoMode->IsActive()) {
+				::PhotoMode::AdjustHotkeys::OnFrameUpdate();
+			}
+
 			if (!(photoMode->IsActive() && photoMode->IsHidden() && photoMode->HasOverlay())) {
 				return;
 			}

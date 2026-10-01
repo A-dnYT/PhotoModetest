@@ -63,7 +63,11 @@ namespace PhotoMode::Hotkeys
 			return false;
 		}
 		const auto modifier = MANAGER(Input)->IsInputKBM() ? keyboardModifier : gamePadModifier;
-		return modifier < 0 || static_cast<std::uint32_t>(modifier) == a_key || AdjustHotkeys::IsKeyHeld(modifier);
+		if (modifier < 0) {
+			// plain key: loses to any hotkey whose Modifier+Key combo on this key is held
+			return !AdjustHotkeys::IsOverriddenByModifierCombo(a_key);
+		}
+		return static_cast<std::uint32_t>(modifier) == a_key || AdjustHotkeys::IsKeyHeld(modifier);
 	}
 
 	std::uint32_t Manager::Key::GetKey() const

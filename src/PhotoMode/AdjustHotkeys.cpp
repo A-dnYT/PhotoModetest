@@ -49,6 +49,7 @@ namespace PhotoMode::AdjustHotkeys
 			const Combo*      matched{ nullptr };  // combo that is currently held (before specificity filtering)
 			bool              active{ false };
 			Clock::time_point activatedAt{};
+			bool              navArrowDown{ false };  // menu nav: we pressed an arrow key in the menu for this binding
 		};
 
 		struct Control
@@ -79,7 +80,11 @@ namespace PhotoMode::AdjustHotkeys
 			// menu navigation: "increase" = up, "decrease" = down; held like the arrow keys / d-pad
 			bool menuNav{ false };
 
-			[[nodiscard]] bool IsAction() const { return holdAction || onPress || panAction || menuNav; }
+			// PhotoMode's own hotkeys (Next Tab, Take Photo, ...): their action is run by Input.cpp, but they take part
+			// here so a Modifier+Key combo of theirs beats a plain Key binding, and so the menu doesn't also react to them
+			bool passthrough{ false };
+
+			[[nodiscard]] bool IsAction() const { return holdAction || onPress || panAction || menuNav || passthrough; }
 		};
 
 		float GetFOV() { return RE::PlayerCamera::GetSingleton()->worldFOV; }
@@ -101,7 +106,7 @@ namespace PhotoMode::AdjustHotkeys
 		void  SetGlobalTime(float a_value) { RE::BSTimer::GetSingleton()->SetGlobalTimeMultiplier(a_value, true); }
 
 		// ranges match the sliders on the Camera and Time tabs
-		std::array<Control, 8> controls{ {
+		std::array<Control, 13> controls{ {
 			{ "FOV", 1.0f, 30.0f, 5.0f, 150.0f, GetFOV, SetFOV,
 				{ { 78, kNone }, { kNone, kNone } },     // Numpad +
 				{ { 74, kNone }, { kNone, kNone } } },   // Numpad -
@@ -134,24 +139,29 @@ namespace PhotoMode::AdjustHotkeys
 				{ { kNone, kNone }, { kNone, kNone } },
 				{ { kNone, kNone }, { kNone, kNone } },
 				false, "Up", "Down", nullptr, false, true },
+			// PhotoMode's misc hotkeys (bindings come from i<Name>Key / i<Name>GamePad and their Modifier settings)
+			{ "NextTab", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", nullptr, false, false, true },
+			{ "PreviousTab", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", nullptr, false, false, true },
+			{ "TakePhoto", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", nullptr, false, false, true },
+			{ "ToggleMenus", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", nullptr, false, false, true },
+			{ "Reset", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", nullptr, false, false, true },
 		} };
 
-		// Press / release "up" or "down" in the Photo Mode menu, the same way the arrow keys (keyboard
-		// navigation) or the d-pad (gamepad navigation) do, so holding repeats like normal.
-		void SendMenuNav(float a_direction, bool a_down)
+		// primaries of Modifier+Key combos that are currently held (a plain Key binding on these is overridden)
+		std::set<std::int32_t> primariesWithModifierHeld;
+
+		// Press / release the up or down arrow key in the Photo Mode menu (keyboard Menu Up/Down bindings).
+		// Gamepad Menu Up/Down bindings press the d-pad instead, in FilterGamepadForMenu.
+		void SendMenuArrow(float a_direction, bool a_down)
 		{
 			if (!ImGui::GetCurrentContext()) {
 				return;
 			}
-			auto&      io = ImGui::GetIO();
-			const bool gamepadNav = (io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) != 0;
-			if (a_down && !gamepadNav) {
+			auto& io = ImGui::GetIO();
+			if (a_down) {
 				io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // needed when navigating with the mouse
 			}
-			const ImGuiKey key = gamepadNav ?
-			                         (a_direction > 0.0f ? ImGuiKey_GamepadDpadUp : ImGuiKey_GamepadDpadDown) :
-			                         (a_direction > 0.0f ? ImGuiKey_UpArrow : ImGuiKey_DownArrow);
-			io.AddKeyEvent(key, a_down);
+			io.AddKeyEvent(a_direction > 0.0f ? ImGuiKey_UpArrow : ImGuiKey_DownArrow, a_down);
 		}
 
 		enum PanMode : std::int32_t
@@ -207,7 +217,7 @@ namespace PhotoMode::AdjustHotkeys
 		void Evaluate(Clock::time_point a_now)
 		{
 			// 1. find the held combo for every binding (prefer a combo that uses a modifier)
-			std::set<std::int32_t> primariesWithModifierHeld;
+			primariesWithModifierHeld.clear();
 			ForEachBinding([&](Control&, Binding& a_binding, float) {
 				a_binding.matched = nullptr;
 				for (const auto* combo : { &a_binding.keyboard, &a_binding.gamePad }) {
@@ -225,8 +235,12 @@ namespace PhotoMode::AdjustHotkeys
 				const auto* matched = a_binding.matched;
 				const bool  nowActive = matched && (matched->HasModifier() || !primariesWithModifierHeld.contains(matched->primary));
 
-				if (a_control.menuNav && nowActive != a_binding.active) {
-					SendMenuNav(a_direction, nowActive);
+				if (a_control.menuNav) {
+					const bool wantArrow = nowActive && matched == &a_binding.keyboard;
+					if (wantArrow != a_binding.navArrowDown) {
+						SendMenuArrow(a_direction, wantArrow);
+						a_binding.navArrowDown = wantArrow;
+					}
 				}
 
 				if (nowActive && !a_binding.active) {
@@ -265,7 +279,7 @@ namespace PhotoMode::AdjustHotkeys
 		{
 			bool result = false;
 			ForEachBinding([&](Control& a_control, Binding& a_binding, float) {
-				if (!a_control.panAction && a_binding.active && a_binding.matched && static_cast<std::uint32_t>(a_binding.matched->primary) == a_key) {
+				if (!a_control.panAction && !a_control.passthrough && a_binding.active && a_binding.matched && static_cast<std::uint32_t>(a_binding.matched->primary) == a_key) {
 					result = true;
 				}
 			});
@@ -286,7 +300,7 @@ namespace PhotoMode::AdjustHotkeys
 
 			control.increase.keyboard.Load(a_ini, "i" + name + inc + "Key");
 			control.increase.gamePad.Load(a_ini, "i" + name + inc + "GamePad");
-			if (control.onPress || control.panAction) {
+			if (control.onPress || control.panAction || control.passthrough) {
 				continue;  // single binding, no step/speed settings
 			}
 			control.decrease.keyboard.Load(a_ini, "i" + name + dec + "Key");
@@ -358,6 +372,101 @@ namespace PhotoMode::AdjustHotkeys
 		return IsPressed(a_key);
 	}
 
+	bool IsKeyClaimed(std::uint32_t a_key)
+	{
+		bool result = false;
+		ForEachBinding([&](Control& a_control, Binding& a_binding, float) {
+			if (!a_control.panAction && a_binding.active && a_binding.matched && static_cast<std::uint32_t>(a_binding.matched->primary) == a_key) {
+				result = true;
+			}
+		});
+		return result;
+	}
+
+	bool IsOverriddenByModifierCombo(std::uint32_t a_key)
+	{
+		return primariesWithModifierHeld.contains(static_cast<std::int32_t>(a_key));
+	}
+
+	void FilterGamepadForMenu(std::uint16_t& a_buttons, std::uint8_t& a_leftTrigger, std::uint8_t& a_rightTrigger)
+	{
+		const auto photoMode = MANAGER(PhotoMode);
+		if (!photoMode->IsActive() || photoMode->ShouldBlockInput()) {
+			return;  // e.g. the gallery uses the d-pad for its own navigation
+		}
+
+		// XInput button bits -> SKSE gamepad keycodes (266 = d-pad up ... 279 = Y, 280 = LT, 281 = RT)
+		constexpr std::array<std::pair<std::uint16_t, std::int32_t>, 14> kButtons{ {
+			{ 0x0001, 266 }, { 0x0002, 267 }, { 0x0004, 268 }, { 0x0008, 269 },  // d-pad up, down, left, right
+			{ 0x0010, 270 }, { 0x0020, 271 }, { 0x0040, 272 }, { 0x0080, 273 },  // start, back, left stick, right stick
+			{ 0x0100, 274 }, { 0x0200, 275 },                                    // LB, RB
+			{ 0x1000, 276 }, { 0x2000, 277 }, { 0x4000, 278 }, { 0x8000, 279 }   // A, B, X, Y
+		} };
+		constexpr std::int32_t kLT = 280;
+		constexpr std::int32_t kRT = 281;
+		constexpr std::uint8_t kTriggerThreshold = 30;  // XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+
+		std::set<std::int32_t> down;
+		for (const auto& [mask, key] : kButtons) {
+			if (a_buttons & mask) {
+				down.insert(key);
+			}
+		}
+		if (a_leftTrigger > kTriggerThreshold) {
+			down.insert(kLT);
+		}
+		if (a_rightTrigger > kTriggerThreshold) {
+			down.insert(kRT);
+		}
+
+		const auto comboDown = [&](const Combo& a_combo) {
+			return a_combo.IsValid() && down.contains(a_combo.primary) && (!a_combo.HasModifier() || down.contains(a_combo.modifier));
+		};
+
+		// Hide from the menu: the main button of any hotkey combo being pressed, and any button used as a modifier
+		// (modifiers are reserved, so pressing one first doesn't also do something in the menu).
+		std::set<std::int32_t> hidden;
+		std::set<std::int32_t> withModifier;
+		ForEachBinding([&](Control& a_control, Binding& a_binding, float) {
+			const auto& combo = a_binding.gamePad;
+			if (a_control.panAction || !combo.IsValid()) {
+				return;
+			}
+			if (combo.HasModifier()) {
+				hidden.insert(combo.modifier);
+			}
+			if (comboDown(combo)) {
+				hidden.insert(combo.primary);
+				if (combo.HasModifier()) {
+					withModifier.insert(combo.primary);
+				}
+			}
+		});
+
+		// Gamepad Menu Up / Down: hold the d-pad for the menu while the combo is held (so it repeats like the d-pad)
+		std::uint16_t forced = 0;
+		const auto&   nav = *std::ranges::find_if(controls, [](const Control& a_control) { return a_control.menuNav; });
+		for (const auto& [binding, mask] : { std::pair{ &nav.increase, std::uint16_t{ 0x0001 } }, std::pair{ &nav.decrease, std::uint16_t{ 0x0002 } } }) {
+			const auto& combo = binding->gamePad;
+			if (comboDown(combo) && (combo.HasModifier() || !withModifier.contains(combo.primary))) {
+				forced = static_cast<std::uint16_t>(forced | mask);
+			}
+		}
+
+		for (const auto& [mask, key] : kButtons) {
+			if (hidden.contains(key)) {
+				a_buttons = static_cast<std::uint16_t>(a_buttons & ~mask);
+			}
+		}
+		if (hidden.contains(kLT)) {
+			a_leftTrigger = 0;
+		}
+		if (hidden.contains(kRT)) {
+			a_rightTrigger = 0;
+		}
+		a_buttons = static_cast<std::uint16_t>(a_buttons | forced);
+	}
+
 	bool ShouldMousePan(bool a_panning, bool a_cursorOverWindow)
 	{
 		const bool keyHeld = PanControl().increase.active;
@@ -375,11 +484,13 @@ namespace PhotoMode::AdjustHotkeys
 	void Reset()
 	{
 		panToggledOn = false;
-		ForEachBinding([](Control& a_control, Binding& a_binding, float a_direction) {
-			if (a_control.menuNav && a_binding.active) {
-				SendMenuNav(a_direction, false);
+		ForEachBinding([](Control&, Binding& a_binding, float a_direction) {
+			if (a_binding.navArrowDown) {
+				SendMenuArrow(a_direction, false);
+				a_binding.navArrowDown = false;
 			}
 		});
+		primariesWithModifierHeld.clear();
 		pressedKeys.clear();
 		ForEachBinding([](Control&, Binding& a_binding, float) {
 			a_binding.matched = nullptr;

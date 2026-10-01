@@ -823,22 +823,22 @@ namespace Input
 						}
 					} else if (hotKeys->IsToggleMenus(hotKey) && buttonEvent->IsDown()) {
 						photoMode->ToggleUI();
-					} else if (!photoMode->IsHidden()) {
-						if (hotKeys->IsNextTab(hotKey) && buttonEvent->IsDown()) {
-							photoMode->NavigateTab(false);
-						} else if (hotKeys->IsPreviousTab(hotKey) && buttonEvent->IsDown()) {
-							photoMode->NavigateTab(true);
-						} else if (hotKeys->IsReset(hotKey)) {
-							if (buttonEvent->IsUp()) {
-								photoMode->Revert(false);
-							} else if (buttonEvent->HeldDuration() > keyHeldDuration) {
-								photoMode->DoResetAll();
-							}
+					} else if (hotKeys->IsNextTab(hotKey) && buttonEvent->IsDown()) {  // these also work while the UI is hidden
+						photoMode->NavigateTab(false);
+					} else if (hotKeys->IsPreviousTab(hotKey) && buttonEvent->IsDown()) {
+						photoMode->NavigateTab(true);
+					} else if (hotKeys->IsReset(hotKey)) {
+						if (buttonEvent->IsUp()) {
+							photoMode->Revert(false);
+						} else if (buttonEvent->HeldDuration() > keyHeldDuration) {
+							photoMode->DoResetAll();
 						}
 					}
 				}
 
-				if (!photoMode->IsHidden() && !adjustConsumed) {
+				// keys that belong to a held hotkey (ours or PhotoMode's own) don't also act in the menu
+				const bool claimed = adjustConsumed || (!io.WantTextInput && PhotoMode::AdjustHotkeys::IsKeyClaimed(hotKey));
+				if (!photoMode->IsHidden() && !claimed) {
 					if (inputDevice == DEVICE::kKeyboard && hotKey == KEY::kTab) {
 						io.AddKeyEvent(ImGuiKey_Tab, buttonEvent->IsDown());
 					} else {

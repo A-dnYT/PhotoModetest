@@ -38,6 +38,7 @@ typedef DWORD(WINAPI* PFN_XInputGetState)(DWORD, XINPUT_STATE*);
 #	endif
 
 #	include "Input.h"
+#	include "PhotoMode/AdjustHotkeys.h"
 
 namespace SKSE
 {
@@ -352,6 +353,10 @@ namespace SKSE
 		if (!bd->HasGamepad || bd->XInputGetState == nullptr || bd->XInputGetState(0, &xinput_state) != ERROR_SUCCESS)
 			return;
 		io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+
+		// Photo Mode hotkeys: hide buttons that belong to hotkeys (and modifiers) from the menu,
+		// and press the d-pad for gamepad Menu Up / Down bindings
+		::PhotoMode::AdjustHotkeys::FilterGamepadForMenu(gamepad.wButtons, gamepad.bLeftTrigger, gamepad.bRightTrigger);
 
 #		define IM_SATURATE(V) (V < 0.0f ? 0.0f : V > 1.0f ? 1.0f : \
 															 V)
