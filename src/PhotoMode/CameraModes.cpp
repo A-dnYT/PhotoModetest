@@ -29,6 +29,9 @@ namespace PhotoMode::CameraModes
 		bool  moveCameraOnFreeze{ false };   // left stick / up-down move the camera in each cinematic mode
 		bool  moveCameraOnRelease{ false };
 		bool  moveCameraOnFollow{ false };
+		bool  carryWithPlayerOnFreeze{ false };   // the camera is carried along by the player's movement in each cinematic mode
+		bool  carryWithPlayerOnRelease{ false };
+		bool  carryWithPlayerOnFollow{ false };
 
 		constexpr float kUnitsPerCameraSpeed = 100.0f;  // camera movement: game units per second per point of Camera Speed
 
@@ -41,6 +44,8 @@ namespace PhotoMode::CameraModes
 		RE::NiPoint2 leftStick{};
 		bool         gameUpHeld{ false };    // the game's own controller camera up / down buttons
 		bool         gameDownHeld{ false };
+		RE::NiPoint3 lastPlayerPosition{};
+		bool         lastPlayerPositionValid{ false };
 		bool         pendingFreeCameraPose{ false };  // copy the cinematic pose into the free camera once it is active
 		bool         forcedThirdPerson{ false };      // we left first person to show the player
 		Clock::time_point lastUpdate{};
@@ -205,11 +210,58 @@ namespace PhotoMode::CameraModes
 			static inline constexpr std::size_t            idx{ 0x05 };  // TESCameraState::GetTranslation
 		};
 
+		// After the game's whole camera update: put the camera node where the cinematic camera is. The player camera
+		// states don't take their rendered position from GetTranslation, so this is what actually pins the position.
+		struct PlayerCameraUpdate
+		{
+			static void thunk(RE::PlayerCamera* a_this)
+			{
+				func(a_this);
+
+				if (!OverrideActive()) {
+					return;
+				}
+				const auto root = a_this->cameraRoot.get();
+				if (!root) {
+					return;
+				}
+				RE::NiQuaternion rotation;
+				if (OverrideRotation(rotation)) {
+					root->local.rotate = rotation.ToRotation();
+				}
+				root->local.translate = position;
+
+				RE::NiUpdateData updateData{};
+				root->Update(updateData);
+			}
+			static inline REL::Relocation<decltype(thunk)> func;
+			static inline constexpr std::size_t            idx{ 0x02 };  // TESCamera::Update
+		};
+
+		// Backup for the PlayerCameraUpdate hook: after a third-person state's own update, keep its position on the
+		// cinematic camera (ThirdPersonState::translation is where its camera position is kept).
+		template <class State>
+		struct ThirdPersonUpdate
+		{
+			static void thunk(State* a_this, RE::BSTSmartPointer<RE::TESCameraState>& a_nextState)
+			{
+				func(a_this, a_nextState);
+				if (OverrideActive()) {
+					a_this->translation = position;
+				}
+			}
+			static inline REL::Relocation<decltype(thunk)> func;
+			static inline constexpr std::size_t            idx{ 0x03 };  // TESCameraState::Update
+		};
+
 		template <class State>
 		void InstallStateHooks()
 		{
 			stl::write_vfunc<State, GetRotation<State>>();
 			stl::write_vfunc<State, GetTranslation<State>>();
+			if constexpr (std::is_base_of_v<RE::ThirdPersonState, State>) {
+				stl::write_vfunc<State, ThirdPersonUpdate<State>>();
+			}
 		}
 
 		// ---- controller does not control the player in the cinematic modes ----
@@ -266,6 +318,37 @@ namespace PhotoMode::CameraModes
 
 			yaw = WrapSigned(yaw + x * speed);
 			pitch = std::clamp(pitch - y * speed, -kPitchLimit, kPitchLimit);  // stick up looks up
+		}
+
+		bool CarriedWithPlayer()
+		{
+			switch (mode) {
+			case kFreeze:
+				return carryWithPlayerOnFreeze;
+			case kRelease:
+				return carryWithPlayerOnRelease;
+			case kFollow:
+				return carryWithPlayerOnFollow;
+			default:
+				return false;
+			}
+		}
+
+		// Move the camera by however much the player moved since the last frame (camera keeps its offset to the player).
+		void CarryWithPlayer()
+		{
+			const auto player = RE::PlayerCharacter::GetSingleton();
+			if (!player) {
+				return;
+			}
+			const auto playerPosition = player->GetPosition();
+			if (lastPlayerPositionValid && CarriedWithPlayer()) {
+				position.x += playerPosition.x - lastPlayerPosition.x;
+				position.y += playerPosition.y - lastPlayerPosition.y;
+				position.z += playerPosition.z - lastPlayerPosition.z;
+			}
+			lastPlayerPosition = playerPosition;
+			lastPlayerPositionValid = true;
 		}
 
 		bool CanMoveCamera()
@@ -345,6 +428,7 @@ namespace PhotoMode::CameraModes
 		InstallStateHooks<RE::AutoVanityState>();
 		InstallStateHooks<RE::PlayerCameraTransitionState>();
 
+		stl::write_vfunc<RE::PlayerCamera, PlayerCameraUpdate>();
 		stl::write_vfunc<RE::PlayerControls, PlayerControlsInput>();
 
 		REX::INFO("Installed camera mode hooks");
@@ -359,6 +443,9 @@ namespace PhotoMode::CameraModes
 		moveCameraOnFreeze = a_ini.GetBoolValue("Controls", "bMoveCameraOnFreeze", moveCameraOnFreeze);
 		moveCameraOnRelease = a_ini.GetBoolValue("Controls", "bMoveCameraOnRelease", moveCameraOnRelease);
 		moveCameraOnFollow = a_ini.GetBoolValue("Controls", "bMoveCameraOnFollow", moveCameraOnFollow);
+		carryWithPlayerOnFreeze = a_ini.GetBoolValue("Controls", "bCameraFollowsPlayerOnFreeze", carryWithPlayerOnFreeze);
+		carryWithPlayerOnRelease = a_ini.GetBoolValue("Controls", "bCameraFollowsPlayerOnRelease", carryWithPlayerOnRelease);
+		carryWithPlayerOnFollow = a_ini.GetBoolValue("Controls", "bCameraFollowsPlayerOnFollow", carryWithPlayerOnFollow);
 	}
 
 	Mode GetMode()
@@ -403,6 +490,7 @@ namespace PhotoMode::CameraModes
 		mode = a_mode;
 		rightStick = {};
 		leftStick = {};
+		lastPlayerPositionValid = false;
 		gameUpHeld = false;
 		gameDownHeld = false;
 		RE::SendHUDMessage::ShowHUDMessage(TRANSLATE(modeNames[a_mode]));
@@ -450,6 +538,8 @@ namespace PhotoMode::CameraModes
 
 		LeaveFirstPerson();  // e.g. the game switched to first person on its own
 
+		CarryWithPlayer();
+
 		switch (mode) {
 		case kRelease:
 			UpdateRelease(deltaTime);
@@ -470,6 +560,7 @@ namespace PhotoMode::CameraModes
 	void OnActivate()
 	{
 		mode = kPhoto;
+		lastPlayerPositionValid = false;
 		rightStick = {};
 		leftStick = {};
 		gameUpHeld = false;

@@ -1145,6 +1145,37 @@
           }
         },
         {
+          "text": "$PM_CameraFollowsPlayer_Header",
+          "type": "header"
+        },
+        {
+          "id": "bCameraFollowsPlayerOnFreeze:Controls",
+          "text": "$PM_CameraFollowsPlayerOnFreeze_Text",
+          "type": "toggle",
+          "help": "$PM_CameraFollowsPlayer_Help",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
+          "id": "bCameraFollowsPlayerOnRelease:Controls",
+          "text": "$PM_CameraFollowsPlayerOnRelease_Text",
+          "type": "toggle",
+          "help": "$PM_CameraFollowsPlayer_Help",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
+          "id": "bCameraFollowsPlayerOnFollow:Controls",
+          "text": "$PM_CameraFollowsPlayerOnFollow_Text",
+          "type": "toggle",
+          "help": "$PM_CameraFollowsPlayer_Help",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
           "text": "$PM_ReleaseCamSettings_Header",
           "type": "header"
         },
