@@ -5,6 +5,7 @@
 #include "Input.h"
 #include "Manager.h"
 #include "AdjustHotkeys.h"
+#include "CameraModes.h"
 
 namespace PhotoMode::Hotkeys
 {
@@ -25,6 +26,7 @@ namespace PhotoMode::Hotkeys
 		galleryLoadScreen.LoadKeys(a_ini, "iGalleryLoadScreen");
 
 		AdjustHotkeys::LoadSettings(a_ini);
+		CameraModes::LoadSettings(a_ini);
 	}
 
 	void Manager::TogglePhotoMode(RE::InputEvent* const* a_event)

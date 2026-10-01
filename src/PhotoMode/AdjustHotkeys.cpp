@@ -1,5 +1,6 @@
 #include "AdjustHotkeys.h"
 
+#include "CameraModes.h"
 #include "Manager.h"
 
 #include <algorithm>
@@ -102,11 +103,16 @@ namespace PhotoMode::AdjustHotkeys
 			freezeTime = !freezeTime;
 		}
 
+		void SwitchToPhotoCam() { CameraModes::SetMode(CameraModes::kPhoto); }
+		void SwitchToFreezeCam() { CameraModes::SetMode(CameraModes::kFreeze); }
+		void SwitchToReleaseCam() { CameraModes::SetMode(CameraModes::kRelease); }
+		void SwitchToFollowCam() { CameraModes::SetMode(CameraModes::kFollow); }
+
 		float GetGlobalTime() { return RE::BSTimer::QGlobalTimeMultiplier(); }
 		void  SetGlobalTime(float a_value) { RE::BSTimer::GetSingleton()->SetGlobalTimeMultiplier(a_value, true); }
 
 		// ranges match the sliders on the Camera and Time tabs
-		std::array<Control, 13> controls{ {
+		std::array<Control, 17> controls{ {
 			{ "FOV", 1.0f, 30.0f, 5.0f, 150.0f, GetFOV, SetFOV,
 				{ { 78, kNone }, { kNone, kNone } },     // Numpad +
 				{ { 74, kNone }, { kNone, kNone } } },   // Numpad -
@@ -145,6 +151,11 @@ namespace PhotoMode::AdjustHotkeys
 			{ "TakePhoto", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", nullptr, false, false, true },
 			{ "ToggleMenus", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", nullptr, false, false, true },
 			{ "Reset", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", nullptr, false, false, true },
+			// camera mode switches (i<Name>Key / i<Name>GamePad + Modifier); unbound by default
+			{ "PhotoCam", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", SwitchToPhotoCam },
+			{ "FreezeCam", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", SwitchToFreezeCam },
+			{ "ReleaseCam", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", SwitchToReleaseCam },
+			{ "FollowCam", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", SwitchToFollowCam },
 		} };
 
 		// primaries of Modifier+Key combos that are currently held (a plain Key binding on these is overridden)

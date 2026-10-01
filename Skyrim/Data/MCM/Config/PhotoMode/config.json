@@ -1026,6 +1026,241 @@
       ]
     },
     {
+      "pageDisplayName": "$PM_CameraModes_Page",
+      "cursorFillMode": "topToBottom",
+      "content": [
+        {
+          "text": "$PM_CameraModeHotkeys_Header",
+          "type": "header"
+        },
+        {
+          "id": "iPhotoCamKey:Controls",
+          "text": "$PM_CameraMode_Photo",
+          "help": "$PM_CameraMode_Photo_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iPhotoCamKeyModifier:Controls",
+          "text": "$PM_CameraMode_PhotoModifier",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFreezeCamKey:Controls",
+          "text": "$PM_CameraMode_Freeze",
+          "help": "$PM_CameraMode_Freeze_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFreezeCamKeyModifier:Controls",
+          "text": "$PM_CameraMode_FreezeModifier",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iReleaseCamKey:Controls",
+          "text": "$PM_CameraMode_Release",
+          "help": "$PM_CameraMode_Release_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iReleaseCamKeyModifier:Controls",
+          "text": "$PM_CameraMode_ReleaseModifier",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFollowCamKey:Controls",
+          "text": "$PM_CameraMode_Follow",
+          "help": "$PM_CameraMode_Follow_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFollowCamKeyModifier:Controls",
+          "text": "$PM_CameraMode_FollowModifier",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "text": "$PM_ReleaseCamSettings_Header",
+          "type": "header"
+        },
+        {
+          "id": "fReleasePanSpeed:Controls",
+          "text": "$PM_ReleasePanSpeed_Text",
+          "type": "slider",
+          "help": "$PM_ReleasePanSpeed_Help",
+          "valueOptions": {
+            "min": 10.0,
+            "max": 360.0,
+            "step": 5.0,
+            "formatString": "{0} deg/sec",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "text": "$PM_FollowCamSettings_Header",
+          "type": "header"
+        },
+        {
+          "id": "fFollowYawSpeed:Controls",
+          "text": "$PM_FollowYawSpeed_Text",
+          "type": "slider",
+          "help": "$PM_FollowSpeed_Help",
+          "valueOptions": {
+            "min": 0.5,
+            "max": 20.0,
+            "step": 0.5,
+            "formatString": "{1}",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "id": "fFollowPitchSpeed:Controls",
+          "text": "$PM_FollowPitchSpeed_Text",
+          "type": "slider",
+          "help": "$PM_FollowSpeed_Help",
+          "valueOptions": {
+            "min": 0.5,
+            "max": 20.0,
+            "step": 0.5,
+            "formatString": "{1}",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "id": "fFollowHeightOffset:Controls",
+          "text": "$PM_FollowHeightOffset_Text",
+          "type": "slider",
+          "help": "$PM_FollowHeightOffset_Help",
+          "valueOptions": {
+            "min": 0.0,
+            "max": 200.0,
+            "step": 5.0,
+            "formatString": "{0}",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "text": "$PM_CameraModeHotkeysGamepad_Header",
+          "type": "header",
+          "position": 1
+        },
+        {
+          "id": "iPhotoCamGamePad:Controls",
+          "text": "$PM_CameraMode_Photo",
+          "help": "$PM_CameraMode_Photo_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iPhotoCamGamePadModifier:Controls",
+          "text": "$PM_CameraMode_PhotoModifier",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFreezeCamGamePad:Controls",
+          "text": "$PM_CameraMode_Freeze",
+          "help": "$PM_CameraMode_Freeze_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFreezeCamGamePadModifier:Controls",
+          "text": "$PM_CameraMode_FreezeModifier",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iReleaseCamGamePad:Controls",
+          "text": "$PM_CameraMode_Release",
+          "help": "$PM_CameraMode_Release_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iReleaseCamGamePadModifier:Controls",
+          "text": "$PM_CameraMode_ReleaseModifier",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFollowCamGamePad:Controls",
+          "text": "$PM_CameraMode_Follow",
+          "help": "$PM_CameraMode_Follow_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iFollowCamGamePadModifier:Controls",
+          "text": "$PM_CameraMode_FollowModifier",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        }
+      ]
+    },
+    {
       "pageDisplayName": "$PM_GalleryControls_Page",
       "cursorFillMode": "topToBottom",
       "content": [

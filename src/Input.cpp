@@ -3,6 +3,7 @@
 #include "Gallery/Manager.h"
 #include "MenuIntegration.h"
 #include "PhotoMode/AdjustHotkeys.h"
+#include "PhotoMode/CameraModes.h"
 #include "PhotoMode/Hotkeys.h"
 #include "PhotoMode/Manager.h"
 #include "Screenshots/Manager.h"
@@ -734,6 +735,8 @@ namespace Input
 		bool cursorOverWindow = cursorInit && MANAGER(PhotoMode)->IsCursorHoveringOverWindow();
 
 		for (auto event = *a_evn; event; event = event->next) {
+			PhotoMode::CameraModes::OnInputEvent(event);
+
 			if (!SetInputDevice(event->GetDevice())) {
 				continue;
 			}

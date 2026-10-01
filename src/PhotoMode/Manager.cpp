@@ -1,6 +1,7 @@
 #include "Manager.h"
 
 #include "AdjustHotkeys.h"
+#include "CameraModes.h"
 #include "Gallery/Manager.h"
 #include "Hotkeys.h"
 #include "IGCSBridge/Bridge.h"  // IGCSDOF lifecycle + per-frame camera feed
@@ -109,6 +110,7 @@ namespace PhotoMode
 		MANAGER(Input)->LoadDefaultKeys();
 
 		activated = true;
+		CameraModes::OnActivate();
 		// IGCSDOF: expose the native Photo Mode camera only while Photo Mode is active.
 		IGCSBridge::Bridge::GetSingleton()->OnPhotoModeActivated();
 		if (activeGlobal) {
@@ -170,9 +172,11 @@ namespace PhotoMode
 		characterTab.clear();
 		cachedCharacter = nullptr;
 
-		// reset camera
-		if (originalcameraState != RE::CameraState::kFree) {
-			RE::PlayerCamera::GetSingleton()->ToggleFreeCameraMode(false);
+		// reset camera (Freeze / Release / Follow cam leave the free camera, so only toggle when needed)
+		CameraModes::OnDeactivate();
+		const bool wasFreeCamera = originalcameraState == RE::CameraState::kFree;
+		if (const auto pcCamera = RE::PlayerCamera::GetSingleton(); pcCamera && pcCamera->IsInFreeCameraMode() != wasFreeCamera) {
+			pcCamera->ToggleFreeCameraMode(false);
 			//RE::ControlMap::GetSingleton()->PopInputContext(RE::ControlMap::InputContextID::kTFCMode);
 		}
 

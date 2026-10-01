@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "PhotoMode/AdjustHotkeys.h"
+#include "PhotoMode/CameraModes.h"
 #include "IconsFonts.h"
 #include "Styles.h"
 
@@ -143,6 +144,7 @@ namespace ImGui::Renderer
 			// while the Photo Mode UI (and so the HUD) is hidden
 			if (photoMode->IsActive()) {
 				::PhotoMode::AdjustHotkeys::OnFrameUpdate();
+				::PhotoMode::CameraModes::OnFrameUpdate();
 			}
 
 			if (!(photoMode->IsActive() && photoMode->IsHidden() && photoMode->HasOverlay())) {

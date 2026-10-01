@@ -2,6 +2,7 @@
 
 #include "ImGui/Widgets.h"
 #include "PhotoMode/AdjustHotkeys.h"
+#include "PhotoMode/CameraModes.h"
 
 namespace PhotoMode
 {
@@ -57,6 +58,11 @@ namespace PhotoMode
 
 	void Camera::Draw()
 	{
+		auto cameraMode = CameraModes::GetMode();
+		if (ImGui::EnumSlider("$PM_CameraMode"_T, &cameraMode, CameraModes::modeNames)) {
+			CameraModes::SetMode(cameraMode);
+		}
+
 		ImGui::EnumSlider("$PM_Grid"_T, &CameraGrid::gridType, CameraGrid::gridTypes);
 
 		ImGui::Slider("$PM_FieldOfView"_T, &RE::PlayerCamera::GetSingleton()->worldFOV, 5.0f, 150.0f);

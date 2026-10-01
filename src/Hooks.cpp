@@ -4,6 +4,7 @@
 #include "IGCSBridge/Bridge.h"  // IGCSDOF: direct IgcsConnector bridge
 #include "Input.h"
 #include "MenuIntegration.h"
+#include "PhotoMode/CameraModes.h"
 #include "PhotoMode/Manager.h"
 #include "Screenshots/LoadScreen.h"
 #include "Screenshots/Manager.h"
@@ -72,6 +73,9 @@ namespace PhotoMode
 		IGCSBridge::Bridge::GetSingleton()->LogHookInstallation(0, GetFreeCameraTranslation::idx);
 
 		stl::write_vfunc<RE::TESIdleForm, SetFormEditorID>();
+
+		// Freeze / Release / Follow camera modes
+		CameraModes::InstallHooks();
 
 		//REL::Relocation<std::uintptr_t> applyFootIKErrorFeedback{ RELOCATION_ID(42527, 43690) };  // Actor::ApplyFootIKErrorFeedback
 		//stl::hook_function_prologue<ApplyFootIKErrorFeedback, 5>(applyFootIKErrorFeedback.address());
