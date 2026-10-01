@@ -15,6 +15,7 @@
 // Moving the camera: with bMoveCameraOnFreeze / bMoveCameraOnRelease / bMoveCameraOnFollow on, the controller's
 // left stick moves the cinematic camera (forward/back/sideways where it faces) and the Move Up / Move Down hotkeys
 // and the game's own controller up/down buttons raise / lower it, at Photo Mode's Camera Speed.
+// Holding the Level Movement hotkey keeps forward / back movement horizontal (in every mode, Photo Cam included).
 //
 // Settings ([Controls]): fReleasePanSpeed, fFollowYawSpeed, fFollowPitchSpeed, fFollowHeightOffset,
 // and the mode hotkeys iPhotoCam* / iFreezeCam* / iReleaseCam* / iFollowCam* (handled in AdjustHotkeys).

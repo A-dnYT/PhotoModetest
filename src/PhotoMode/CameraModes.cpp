@@ -296,6 +296,27 @@ namespace PhotoMode::CameraModes
 			static inline constexpr std::size_t            idx{ 0x30 };  // NiAVObject::UpdateWorldData
 		};
 
+		// Photo Cam: while Level Movement is held, the free camera moves as if it were looking straight ahead (its
+		// forward / back movement follows its pitch), so moving stays horizontal. Looking up / down still works: the
+		// change the game makes to the pitch during the update is kept.
+		struct FreeCameraUpdate
+		{
+			static void thunk(RE::FreeCameraState* a_this, RE::BSTSmartPointer<RE::TESCameraState>& a_nextState)
+			{
+				if (!MANAGER(PhotoMode)->IsActive() || !AdjustHotkeys::IsLevelMoveHeld()) {
+					return func(a_this, a_nextState);
+				}
+				const float savedPitch = WrapSigned(a_this->rotation.x);
+				a_this->rotation.x = 0.0f;
+				func(a_this, a_nextState);
+				const float lookChange = WrapSigned(a_this->rotation.x);  // whatever the player turned up / down this frame
+				const float limit = std::max(std::abs(savedPitch), kPitchLimit);
+				a_this->rotation.x = WrapUnsigned(std::clamp(savedPitch + lookChange, -limit, limit));
+			}
+			static inline REL::Relocation<decltype(thunk)> func;
+			static inline constexpr std::size_t            idx{ 0x03 };  // TESCameraState::Update
+		};
+
 		template <class State>
 		void InstallStateHooks()
 		{
@@ -421,7 +442,9 @@ namespace PhotoMode::CameraModes
 			const float distance = std::max(FreeCamera::translateSpeed, 0.0f) * kUnitsPerCameraSpeed * a_deltaTime;
 
 			// same axes as the free camera: forward = (sin yaw cos pitch, cos yaw cos pitch, -sin pitch), right = (cos yaw, -sin yaw, 0)
-			const RE::NiPoint3 forward{ std::sin(yaw) * std::cos(pitch), std::cos(yaw) * std::cos(pitch), -std::sin(pitch) };
+			// Level Movement held: forward / back stays horizontal (full speed), whatever the camera's up / down angle
+			const float        levelPitch = AdjustHotkeys::IsLevelMoveHeld() ? 0.0f : pitch;
+			const RE::NiPoint3 forward{ std::sin(yaw) * std::cos(levelPitch), std::cos(yaw) * std::cos(levelPitch), -std::sin(levelPitch) };
 			const RE::NiPoint3 right{ std::cos(yaw), -std::sin(yaw), 0.0f };
 
 			position.x += (forward.x * forwardInput + right.x * sideInput) * distance;
@@ -468,6 +491,7 @@ namespace PhotoMode::CameraModes
 		InstallStateHooks<RE::PlayerCameraTransitionState>();
 
 		stl::write_vfunc<RE::NiCamera, NiCameraUpdateWorldData>();
+		stl::write_vfunc<RE::FreeCameraState, FreeCameraUpdate>();
 		stl::write_vfunc<RE::PlayerControls, PlayerControlsInput>();
 
 		REX::INFO("Installed camera mode hooks");

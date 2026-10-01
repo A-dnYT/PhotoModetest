@@ -715,6 +715,26 @@
           }
         },
         {
+          "id": "iLevelMoveKey:Controls",
+          "text": "$PM_LevelMove_Text",
+          "help": "$PM_LevelMove_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iLevelMoveKeyModifier:Controls",
+          "text": "$PM_LevelMoveModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
           "text": "$PM_MenuNavHotkeys_Header",
           "type": "header"
         },
@@ -972,6 +992,26 @@
         {
           "id": "iCameraDownGamePadModifier:Controls",
           "text": "$PM_MoveDownModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iLevelMoveGamePad:Controls",
+          "text": "$PM_LevelMove_Text",
+          "help": "$PM_LevelMove_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iLevelMoveGamePadModifier:Controls",
+          "text": "$PM_LevelMoveModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,

@@ -38,6 +38,10 @@ namespace PhotoMode::AdjustHotkeys
 	// Move Up / Move Down hotkeys: 1 = up held, -1 = down held, 0 = neither (or both).
 	int GetCameraMoveDirection();
 
+	// Whether the Level Movement hotkey (iLevelMoveKey / iLevelMoveGamePad, each with an optional Modifier) is held:
+	// moving the camera forward / back then stays horizontal instead of following where the camera points up or down.
+	bool IsLevelMoveHeld();
+
 	// Whether a key (SKSE keycode) is currently held. Used for the modifiers of PhotoMode's other hotkeys.
 	bool IsKeyHeld(std::int32_t a_key);
 

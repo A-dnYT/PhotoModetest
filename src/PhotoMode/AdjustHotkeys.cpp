@@ -85,7 +85,10 @@ namespace PhotoMode::AdjustHotkeys
 			// here so a Modifier+Key combo of theirs beats a plain Key binding, and so the menu doesn't also react to them
 			bool passthrough{ false };
 
-			[[nodiscard]] bool IsAction() const { return holdAction || onPress || panAction || menuNav || passthrough; }
+			// a single binding that only matters while held (Level Movement); read by other code via IsLevelMoveHeld
+			bool holdOnly{ false };
+
+			[[nodiscard]] bool IsAction() const { return holdAction || onPress || panAction || menuNav || passthrough || holdOnly; }
 		};
 
 		float GetFOV() { return RE::PlayerCamera::GetSingleton()->worldFOV; }
@@ -112,7 +115,7 @@ namespace PhotoMode::AdjustHotkeys
 		void  SetGlobalTime(float a_value) { RE::BSTimer::GetSingleton()->SetGlobalTimeMultiplier(a_value, true); }
 
 		// ranges match the sliders on the Camera and Time tabs
-		std::array<Control, 17> controls{ {
+		std::array<Control, 18> controls{ {
 			{ "FOV", 1.0f, 30.0f, 5.0f, 150.0f, GetFOV, SetFOV,
 				{ { 78, kNone }, { kNone, kNone } },     // Numpad +
 				{ { 74, kNone }, { kNone, kNone } } },   // Numpad -
@@ -156,6 +159,8 @@ namespace PhotoMode::AdjustHotkeys
 			{ "FreezeCam", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", SwitchToFreezeCam },
 			{ "ReleaseCam", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", SwitchToReleaseCam },
 			{ "FollowCam", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", SwitchToFollowCam },
+			// level movement (iLevelMoveKey / iLevelMoveGamePad + Modifier): while held, moving forward / back stays horizontal; unbound by default
+			{ "LevelMove", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", nullptr, false, false, false, true },
 		} };
 
 		// primaries of Modifier+Key combos that are currently held (a plain Key binding on these is overridden)
@@ -311,7 +316,7 @@ namespace PhotoMode::AdjustHotkeys
 
 			control.increase.keyboard.Load(a_ini, "i" + name + inc + "Key");
 			control.increase.gamePad.Load(a_ini, "i" + name + inc + "GamePad");
-			if (control.onPress || control.panAction || control.passthrough) {
+			if (control.onPress || control.panAction || control.passthrough || control.holdOnly) {
 				continue;  // single binding, no step/speed settings
 			}
 			control.decrease.keyboard.Load(a_ini, "i" + name + dec + "Key");
@@ -382,6 +387,12 @@ namespace PhotoMode::AdjustHotkeys
 	{
 		const auto& move = *std::ranges::find_if(controls, [](const Control& a_control) { return a_control.holdAction; });
 		return (move.increase.active ? 1 : 0) - (move.decrease.active ? 1 : 0);
+	}
+
+	bool IsLevelMoveHeld()
+	{
+		const auto& level = *std::ranges::find_if(controls, [](const Control& a_control) { return a_control.holdOnly; });
+		return level.increase.active;
 	}
 
 	bool IsKeyHeld(std::int32_t a_key)
