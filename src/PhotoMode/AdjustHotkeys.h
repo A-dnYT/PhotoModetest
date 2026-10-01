@@ -34,6 +34,9 @@ namespace PhotoMode::AdjustHotkeys
 	// (0 = hold the pan key, 1 = toggle with the pan key, 2 = always, hold the pan key for the cursor).
 	bool ShouldMousePan(bool a_panning, bool a_cursorOverWindow);
 
+	// Whether a key (SKSE keycode) is currently held. Used for the modifiers of PhotoMode's other hotkeys.
+	bool IsKeyHeld(std::int32_t a_key);
+
 	// Forget all pressed keys (called when Photo Mode opens / resets / closes).
 	void Reset();
 }

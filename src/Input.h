@@ -73,6 +73,7 @@ namespace Input
 		std::uint32_t screenshotGamepad{ 0 };
 		float         keyHeldDuration{ 0.5 };
 		bool          navigateWithMouse{ true };
+		bool          useGameCameraUpDown{ true };  // the game's own free camera up/down buttons (LB/RB, mouse)
 		bool          blockEscape{ false };
 		bool          cursorInit{ false };
 

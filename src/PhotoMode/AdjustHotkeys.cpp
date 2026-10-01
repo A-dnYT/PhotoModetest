@@ -323,6 +323,11 @@ namespace PhotoMode::AdjustHotkeys
 		}
 	}
 
+	bool IsKeyHeld(std::int32_t a_key)
+	{
+		return IsPressed(a_key);
+	}
+
 	bool ShouldMousePan(bool a_panning, bool a_cursorOverWindow)
 	{
 		const bool keyHeld = PanControl().increase.active;

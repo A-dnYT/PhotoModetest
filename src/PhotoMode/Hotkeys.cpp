@@ -55,6 +55,17 @@ namespace PhotoMode::Hotkeys
 	{
 		keyboard = a_ini.GetLongValue("Controls", std::format("{}Key", a_setting).c_str(), keyboard);
 		gamePad = a_ini.GetLongValue("Controls", std::format("{}GamePad", a_setting).c_str(), gamePad);
+		keyboardModifier = static_cast<std::int32_t>(a_ini.GetLongValue("Controls", std::format("{}KeyModifier", a_setting).c_str(), keyboardModifier));
+		gamePadModifier = static_cast<std::int32_t>(a_ini.GetLongValue("Controls", std::format("{}GamePadModifier", a_setting).c_str(), gamePadModifier));
+	}
+
+	bool Manager::Key::Matches(std::uint32_t a_key) const
+	{
+		if (a_key != GetKey()) {
+			return false;
+		}
+		const auto modifier = MANAGER(Input)->IsInputKBM() ? keyboardModifier : gamePadModifier;
+		return modifier < 0 || static_cast<std::uint32_t>(modifier) == a_key || AdjustHotkeys::IsKeyHeld(modifier);
 	}
 
 	std::uint32_t Manager::Key::GetKey() const

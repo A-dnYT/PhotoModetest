@@ -48,8 +48,28 @@
           }
         },
         {
+          "id": "iNextTabKeyModifier:Controls",
+          "text": "$PM_NextTabModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
           "id": "iPreviousTabKey:Controls",
           "text": "$PM_PreviousTab_Key_Text",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iPreviousTabKeyModifier:Controls",
+          "text": "$PM_PreviousTabModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
           "valueOptions": {
@@ -66,8 +86,28 @@
           }
         },
         {
+          "id": "iTakePhotoKeyModifier:Controls",
+          "text": "$PM_TakePhotoModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
           "id": "iToggleMenusKey:Controls",
           "text": "$PM_ToggleMenus_Key_Text",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iToggleMenusKeyModifier:Controls",
+          "text": "$PM_ToggleMenusModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
           "valueOptions": {
@@ -85,7 +125,7 @@
         },
         {
           "id": "iFreezeTimeKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_FreezeTimeModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -96,6 +136,16 @@
         {
           "id": "iResetKey:Controls",
           "text": "$PM_Reset_Key_Text",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iResetKeyModifier:Controls",
+          "text": "$PM_ResetModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
           "valueOptions": {
@@ -114,7 +164,7 @@
         },
         {
           "id": "iPanCameraKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_PanCameraModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -204,8 +254,28 @@
           }
         },
         {
+          "id": "iNextTabGamePadModifier:Controls",
+          "text": "$PM_NextTabModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
           "id": "iPreviousTabGamePad:Controls",
           "text": "$PM_PreviousTab_Key_Text",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iPreviousTabGamePadModifier:Controls",
+          "text": "$PM_PreviousTabModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
           "valueOptions": {
@@ -222,8 +292,28 @@
           }
         },
         {
+          "id": "iTakePhotoGamePadModifier:Controls",
+          "text": "$PM_TakePhotoModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
           "id": "iToggleMenusGamePad:Controls",
           "text": "$PM_ToggleMenus_Key_Text",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iToggleMenusGamePadModifier:Controls",
+          "text": "$PM_ToggleMenusModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
           "valueOptions": {
@@ -241,7 +331,7 @@
         },
         {
           "id": "iFreezeTimeGamePadModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_FreezeTimeModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -252,6 +342,16 @@
         {
           "id": "iResetGamePad:Controls",
           "text": "$PM_Reset_Key_Text",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iResetGamePadModifier:Controls",
+          "text": "$PM_ResetModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
           "valueOptions": {
@@ -306,7 +406,7 @@
         },
         {
           "id": "iFOVIncreaseKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_IncreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -326,7 +426,7 @@
         },
         {
           "id": "iFOVDecreaseKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_DecreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -376,7 +476,7 @@
         },
         {
           "id": "iTranslateSpeedIncreaseKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_IncreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -396,7 +496,7 @@
         },
         {
           "id": "iTranslateSpeedDecreaseKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_DecreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -446,7 +546,7 @@
         },
         {
           "id": "iViewRollIncreaseKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_IncreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -466,7 +566,7 @@
         },
         {
           "id": "iViewRollDecreaseKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_DecreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -516,7 +616,7 @@
         },
         {
           "id": "iGlobalTimeIncreaseKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_IncreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -536,7 +636,7 @@
         },
         {
           "id": "iGlobalTimeDecreaseKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_DecreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -575,6 +675,15 @@
           "type": "header"
         },
         {
+          "id": "bGameCameraUpDown:Controls",
+          "text": "$PM_GameCameraUpDown_Text",
+          "type": "toggle",
+          "help": "$PM_GameCameraUpDown_Help",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
           "id": "iCameraUpKey:Controls",
           "text": "$PM_MoveUpKey_Text",
           "help": "$PM_MoveKey_Help",
@@ -586,7 +695,7 @@
         },
         {
           "id": "iCameraUpKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_MoveUpModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -606,7 +715,7 @@
         },
         {
           "id": "iCameraDownKeyModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_MoveDownModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -631,7 +740,7 @@
         },
         {
           "id": "iFOVIncreaseGamePadModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_IncreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -651,7 +760,7 @@
         },
         {
           "id": "iFOVDecreaseGamePadModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_DecreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -675,7 +784,7 @@
         },
         {
           "id": "iTranslateSpeedIncreaseGamePadModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_IncreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -695,7 +804,7 @@
         },
         {
           "id": "iTranslateSpeedDecreaseGamePadModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_DecreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -719,7 +828,7 @@
         },
         {
           "id": "iViewRollIncreaseGamePadModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_IncreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -739,7 +848,7 @@
         },
         {
           "id": "iViewRollDecreaseGamePadModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_DecreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -763,7 +872,7 @@
         },
         {
           "id": "iGlobalTimeIncreaseGamePadModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_IncreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -783,7 +892,7 @@
         },
         {
           "id": "iGlobalTimeDecreaseGamePadModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_DecreaseModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -807,7 +916,7 @@
         },
         {
           "id": "iCameraUpGamePadModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_MoveUpModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
@@ -827,7 +936,7 @@
         },
         {
           "id": "iCameraDownGamePadModifier:Controls",
-          "text": "$PM_ModifierKey_Text",
+          "text": "$PM_MoveDownModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,

@@ -48,6 +48,7 @@ namespace Input
 	{
 		keyHeldDuration = static_cast<float>(a_ini.GetDoubleValue("Controls", "iKeyHeldDuration", keyHeldDuration));
 		navigateWithMouse = a_ini.GetBoolValue("Controls", "bNavigateWithMouse", navigateWithMouse);
+		useGameCameraUpDown = a_ini.GetBoolValue("Controls", "bGameCameraUpDown", useGameCameraUpDown);
 	}
 
 	void Manager::LoadDefaultKeys()
@@ -160,7 +161,7 @@ namespace Input
 
 	bool Manager::TiltCamera(const RE::ButtonEvent* a_buttonEvent, std::uint32_t a_key) const
 	{
-		if (!RE::PlayerCamera::GetSingleton()->IsInFreeCameraMode()) {
+		if (!useGameCameraUpDown || !RE::PlayerCamera::GetSingleton()->IsInFreeCameraMode()) {
 			return false;
 		}
 
@@ -817,20 +818,20 @@ namespace Input
 				}
 
 				if (!io.WantTextInput && !adjustConsumed) {
-					if (hotKey == hotKeys->TakePhotoKey()) {
+					if (hotKeys->IsTakePhoto(hotKey)) {
 						if (buttonEvent->IsDown()) {
 							QueueScreenshot(hotKey != GetDefaultScreenshotKey());
 						} else if (MANAGER(Screenshot)->AllowMultiScreenshots() && buttonEvent->HeldDuration() > keyHeldDuration) {
 							QueueScreenshot(true);
 						}
-					} else if (hotKey == hotKeys->ToggleMenusKey() && buttonEvent->IsDown()) {
+					} else if (hotKeys->IsToggleMenus(hotKey) && buttonEvent->IsDown()) {
 						photoMode->ToggleUI();
 					} else if (!photoMode->IsHidden()) {
-						if (hotKey == hotKeys->NextTabKey() && buttonEvent->IsDown()) {
+						if (hotKeys->IsNextTab(hotKey) && buttonEvent->IsDown()) {
 							photoMode->NavigateTab(false);
-						} else if (hotKey == hotKeys->PreviousTabKey() && buttonEvent->IsDown()) {
+						} else if (hotKeys->IsPreviousTab(hotKey) && buttonEvent->IsDown()) {
 							photoMode->NavigateTab(true);
-						} else if (hotKey == hotKeys->ResetKey()) {
+						} else if (hotKeys->IsReset(hotKey)) {
 							if (buttonEvent->IsUp()) {
 								photoMode->Revert(false);
 							} else if (buttonEvent->HeldDuration() > keyHeldDuration) {

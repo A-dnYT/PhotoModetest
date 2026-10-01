@@ -15,6 +15,13 @@ namespace PhotoMode::Hotkeys
 		void TogglePhotoMode(RE::InputEvent* const* a_event);
 		void ToggleGallery(RE::InputEvent* const* a_event);
 
+		// true when a_key is the hotkey and its modifier (if any) is held
+		bool IsReset(std::uint32_t a_key) const { return reset.Matches(a_key); }
+		bool IsTakePhoto(std::uint32_t a_key) const { return takePhoto.Matches(a_key); }
+		bool IsToggleMenus(std::uint32_t a_key) const { return toggleMenus.Matches(a_key); }
+		bool IsNextTab(std::uint32_t a_key) const { return nextTab.Matches(a_key); }
+		bool IsPreviousTab(std::uint32_t a_key) const { return previousTab.Matches(a_key); }
+
 		std::uint32_t        ResetKey() const;
 		std::uint32_t        TakePhotoKey() const;
 		std::uint32_t        ToggleMenusKey() const;
@@ -47,6 +54,7 @@ namespace PhotoMode::Hotkeys
 		{
 			void          LoadKeys(const CSimpleIniA& a_ini, std::string_view a_setting);
 			std::uint32_t GetKey() const;
+			bool          Matches(std::uint32_t a_key) const;
 
 			std::uint32_t Keyboard() const;
 			std::uint32_t GamePad() const;
@@ -54,6 +62,8 @@ namespace PhotoMode::Hotkeys
 		private:
 			std::uint32_t keyboard{ 0 };
 			std::uint32_t gamePad{ 0 };
+			std::int32_t  keyboardModifier{ -1 };  // <setting>KeyModifier, -1 = none
+			std::int32_t  gamePadModifier{ -1 };   // <setting>GamePadModifier, -1 = none
 		};
 
 		struct KeyCombo
