@@ -22,7 +22,6 @@ set(headers ${headers}
 	src/PhotoMode/AdjustHotkeys.h
 	src/PhotoMode/Hotkeys.h
 	src/PhotoMode/Manager.h
-	src/PhotoMode/PanCorrection.h
 	src/PhotoMode/Tabs/Camera.h
 	src/PhotoMode/Tabs/CameraPositions.h
 	src/PhotoMode/Tabs/Character.h

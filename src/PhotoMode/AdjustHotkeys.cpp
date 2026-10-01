@@ -76,7 +76,10 @@ namespace PhotoMode::AdjustHotkeys
 			// the mouse pan key: tracked here for combos, but never swallowed (the UI still sees e.g. Shift)
 			bool panAction{ false };
 
-			[[nodiscard]] bool IsAction() const { return holdAction || onPress || panAction; }
+			// menu navigation: "increase" = up, "decrease" = down; held like the arrow keys / d-pad
+			bool menuNav{ false };
+
+			[[nodiscard]] bool IsAction() const { return holdAction || onPress || panAction || menuNav; }
 		};
 
 		float GetFOV() { return RE::PlayerCamera::GetSingleton()->worldFOV; }
@@ -98,7 +101,7 @@ namespace PhotoMode::AdjustHotkeys
 		void  SetGlobalTime(float a_value) { RE::BSTimer::GetSingleton()->SetGlobalTimeMultiplier(a_value, true); }
 
 		// ranges match the sliders on the Camera and Time tabs
-		std::array<Control, 7> controls{ {
+		std::array<Control, 8> controls{ {
 			{ "FOV", 1.0f, 30.0f, 5.0f, 150.0f, GetFOV, SetFOV,
 				{ { 78, kNone }, { kNone, kNone } },     // Numpad +
 				{ { 74, kNone }, { kNone, kNone } } },   // Numpad -
@@ -126,7 +129,30 @@ namespace PhotoMode::AdjustHotkeys
 				{ { 42, kNone }, { kNone, kNone } },  // Left Shift
 				{ { kNone, kNone }, { kNone, kNone } },
 				false, "", "", nullptr, true },
+			// move up / down in the Photo Mode menu; unbound by default
+			{ "MenuNav", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr,
+				{ { kNone, kNone }, { kNone, kNone } },
+				{ { kNone, kNone }, { kNone, kNone } },
+				false, "Up", "Down", nullptr, false, true },
 		} };
+
+		// Press / release "up" or "down" in the Photo Mode menu, the same way the arrow keys (keyboard
+		// navigation) or the d-pad (gamepad navigation) do, so holding repeats like normal.
+		void SendMenuNav(float a_direction, bool a_down)
+		{
+			if (!ImGui::GetCurrentContext()) {
+				return;
+			}
+			auto&      io = ImGui::GetIO();
+			const bool gamepadNav = (io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) != 0;
+			if (a_down && !gamepadNav) {
+				io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // needed when navigating with the mouse
+			}
+			const ImGuiKey key = gamepadNav ?
+			                         (a_direction > 0.0f ? ImGuiKey_GamepadDpadUp : ImGuiKey_GamepadDpadDown) :
+			                         (a_direction > 0.0f ? ImGuiKey_UpArrow : ImGuiKey_DownArrow);
+			io.AddKeyEvent(key, a_down);
+		}
 
 		enum PanMode : std::int32_t
 		{
@@ -199,6 +225,10 @@ namespace PhotoMode::AdjustHotkeys
 				const auto* matched = a_binding.matched;
 				const bool  nowActive = matched && (matched->HasModifier() || !primariesWithModifierHeld.contains(matched->primary));
 
+				if (a_control.menuNav && nowActive != a_binding.active) {
+					SendMenuNav(a_direction, nowActive);
+				}
+
 				if (nowActive && !a_binding.active) {
 					a_binding.activatedAt = a_now;
 					if (a_control.panAction) {
@@ -262,8 +292,8 @@ namespace PhotoMode::AdjustHotkeys
 			control.decrease.keyboard.Load(a_ini, "i" + name + dec + "Key");
 			control.decrease.gamePad.Load(a_ini, "i" + name + dec + "GamePad");
 
-			if (control.holdAction) {
-				continue;
+			if (control.IsAction()) {
+				continue;  // no step / speed settings
 			}
 
 			control.step = std::max(0.0f, static_cast<float>(a_ini.GetDoubleValue("Controls", ("f" + name + "Step").c_str(), control.step)));
@@ -345,6 +375,11 @@ namespace PhotoMode::AdjustHotkeys
 	void Reset()
 	{
 		panToggledOn = false;
+		ForEachBinding([](Control& a_control, Binding& a_binding, float a_direction) {
+			if (a_control.menuNav && a_binding.active) {
+				SendMenuNav(a_direction, false);
+			}
+		});
 		pressedKeys.clear();
 		ForEachBinding([](Control&, Binding& a_binding, float) {
 			a_binding.matched = nullptr;

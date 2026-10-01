@@ -187,15 +187,6 @@
           }
         },
         {
-          "id": "bEqualizePanSpeed:Controls",
-          "text": "$PM_EqualizePanSpeed_Text",
-          "type": "toggle",
-          "help": "$PM_EqualizePanSpeed_Help",
-          "valueOptions": {
-            "sourceType": "ModSettingBool"
-          }
-        },
-        {
           "id": "bNavigateWithMouse:Controls",
           "text": "$PM_NavigateWithMouse_Text",
           "type": "toggle",
@@ -724,6 +715,50 @@
           }
         },
         {
+          "text": "$PM_MenuNavHotkeys_Header",
+          "type": "header"
+        },
+        {
+          "id": "iMenuNavUpKey:Controls",
+          "text": "$PM_MenuUp_Text",
+          "help": "$PM_MenuNav_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iMenuNavUpKeyModifier:Controls",
+          "text": "$PM_MenuUpModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iMenuNavDownKey:Controls",
+          "text": "$PM_MenuDown_Text",
+          "help": "$PM_MenuNav_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iMenuNavDownKeyModifier:Controls",
+          "text": "$PM_MenuDownModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
           "text": "$PM_FOVHotkeysGamepad_Header",
           "type": "header",
           "position": 1
@@ -937,6 +972,50 @@
         {
           "id": "iCameraDownGamePadModifier:Controls",
           "text": "$PM_MoveDownModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "text": "$PM_MenuNavHotkeysGamepad_Header",
+          "type": "header"
+        },
+        {
+          "id": "iMenuNavUpGamePad:Controls",
+          "text": "$PM_MenuUp_Text",
+          "help": "$PM_MenuNav_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iMenuNavUpGamePadModifier:Controls",
+          "text": "$PM_MenuUpModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iMenuNavDownGamePad:Controls",
+          "text": "$PM_MenuDown_Text",
+          "help": "$PM_MenuNav_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iMenuNavDownGamePadModifier:Controls",
+          "text": "$PM_MenuDownModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,

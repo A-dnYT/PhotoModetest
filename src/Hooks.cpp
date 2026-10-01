@@ -5,7 +5,6 @@
 #include "Input.h"
 #include "MenuIntegration.h"
 #include "PhotoMode/Manager.h"
-#include "PhotoMode/PanCorrection.h"
 #include "Screenshots/LoadScreen.h"
 #include "Screenshots/Manager.h"
 
@@ -34,20 +33,6 @@ namespace PhotoMode
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 		static inline constexpr std::size_t            idx{ 0x05 };
-	};
-
-	// Equalize vertical/horizontal panning speed: runs right after the game updates the free camera.
-	struct UpdateFreeCamera
-	{
-		static void thunk(RE::FreeCameraState* a_this, RE::BSTSmartPointer<RE::TESCameraState>& a_nextState)
-		{
-			const float pitchBefore = a_this->rotation.x;
-			const float yawBefore = a_this->rotation.y;
-			func(a_this, a_nextState);
-			PanCorrection::OnFreeCameraUpdate(a_this, pitchBefore, yawBefore);
-		}
-		static inline REL::Relocation<decltype(thunk)> func;
-		static inline constexpr std::size_t            idx{ 0x03 };  // TESCameraState::Update
 	};
 
 	// TESDataHandler idle array is not populated
@@ -85,8 +70,6 @@ namespace PhotoMode
 		// IGCSDOF: intercept the rendered free-camera translation for aperture samples.
 		stl::write_vfunc<RE::FreeCameraState, GetFreeCameraTranslation>();
 		IGCSBridge::Bridge::GetSingleton()->LogHookInstallation(0, GetFreeCameraTranslation::idx);
-
-		stl::write_vfunc<RE::FreeCameraState, UpdateFreeCamera>();
 
 		stl::write_vfunc<RE::TESIdleForm, SetFormEditorID>();
 

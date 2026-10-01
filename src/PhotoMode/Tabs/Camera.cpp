@@ -2,7 +2,6 @@
 
 #include "ImGui/Widgets.h"
 #include "PhotoMode/AdjustHotkeys.h"
-#include "PhotoMode/PanCorrection.h"
 
 namespace PhotoMode
 {
@@ -36,14 +35,12 @@ namespace PhotoMode
 	void Camera::GetOriginalState()
 	{
 		AdjustHotkeys::Reset();
-		PanCorrection::Reset();
 		originalState.Get();
 	}
 
 	void Camera::RevertState(bool a_deactivate)
 	{
 		AdjustHotkeys::Reset();
-		PanCorrection::Reset();
 		originalState.Revert(a_deactivate);
 
 		// revert view roll

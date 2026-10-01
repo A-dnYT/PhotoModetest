@@ -5,7 +5,6 @@
 #include "Input.h"
 #include "Manager.h"
 #include "AdjustHotkeys.h"
-#include "PanCorrection.h"
 
 namespace PhotoMode::Hotkeys
 {
@@ -26,7 +25,6 @@ namespace PhotoMode::Hotkeys
 		galleryLoadScreen.LoadKeys(a_ini, "iGalleryLoadScreen");
 
 		AdjustHotkeys::LoadSettings(a_ini);
-		PanCorrection::LoadSettings(a_ini);
 	}
 
 	void Manager::TogglePhotoMode(RE::InputEvent* const* a_event)
