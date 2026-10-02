@@ -36,6 +36,7 @@ namespace PhotoMode::Hotkeys
 		}
 
 		togglePhotoMode.ProcessKeyPress(a_event, []() {
+			REX::INFO("Photo Mode hotkey pressed (Photo Mode is {})", MANAGER(PhotoMode)->IsActive() ? "open" : "closed");
 			MANAGER(PhotoMode)->ToggleActive();
 		}, &toggleGallery);
 	}
@@ -121,7 +122,8 @@ namespace PhotoMode::Hotkeys
 	bool Manager::KeyCombo::ProcessKeyPress(RE::InputEvent* const* a_event, std::function<void()> a_callback, const KeyCombo* a_sibling) const
 	{
 		// The game sends an event for every held button each frame, so this batch has everything that is held.
-		// The combo fires on the frame its key goes down (not while it stays held), whatever else is held.
+		// The combo fires on the frame it becomes complete (its key and modifier held, in either order, one of them
+		// just pressed) - not again while it stays held - whatever else is held.
 		std::set<std::uint32_t> held;
 		std::set<std::uint32_t> justPressed;
 
@@ -150,14 +152,17 @@ namespace PhotoMode::Hotkeys
 		}
 
 		for (const auto* combo : { &keyboard, &gamePad }) {
-			if (combo->primary < 0 || !justPressed.contains(static_cast<std::uint32_t>(combo->primary))) {
+			if (combo->primary < 0 || !held.contains(static_cast<std::uint32_t>(combo->primary))) {
 				continue;
 			}
 			const auto primary = static_cast<std::uint32_t>(combo->primary);
 			if (combo->modifier >= 0) {
-				if (!held.contains(static_cast<std::uint32_t>(combo->modifier))) {
+				const auto modifier = static_cast<std::uint32_t>(combo->modifier);
+				if (!held.contains(modifier) || (!justPressed.contains(primary) && !justPressed.contains(modifier))) {
 					continue;
 				}
+			} else if (!justPressed.contains(primary)) {
+				continue;
 			} else if (a_sibling && (a_sibling->keyboard.IsModifierComboHeld(primary, held) || a_sibling->gamePad.IsModifierComboHeld(primary, held))) {
 				continue;  // e.g. Photo Mode on P and the gallery on Shift+P: Shift+P is the gallery's
 			}

@@ -110,6 +110,7 @@ namespace PhotoMode
 		MANAGER(Input)->LoadDefaultKeys();
 
 		activated = true;
+		REX::INFO("Photo Mode opened (camera state {}, game menus {})", static_cast<std::uint32_t>(originalcameraState), menusAlreadyHidden ? "hidden" : "shown");
 		CameraModes::OnActivate();
 		// IGCSDOF: expose the native Photo Mode camera only while Photo Mode is active.
 		IGCSBridge::Bridge::GetSingleton()->OnPhotoModeActivated();
@@ -134,6 +135,7 @@ namespace PhotoMode
 	bool Manager::OnFrameUpdate()
 	{
 		if (!CanShowMenu()) {
+			REX::INFO("Photo Mode closed by the game: {}", GetOpenBlockReason());
 			Deactivate();
 			return false;
 		}
@@ -206,6 +208,11 @@ namespace PhotoMode
 		if (activeGlobal) {
 			activeGlobal->value = 0.0f;
 		}
+		const auto pcCamera = RE::PlayerCamera::GetSingleton();
+		REX::INFO("Photo Mode closed (camera state now {}, free camera {}, game menus {})",
+			pcCamera && pcCamera->currentState ? static_cast<std::uint32_t>(pcCamera->currentState->id) : 99u,
+			pcCamera && pcCamera->IsInFreeCameraMode() ? "on" : "off",
+			RE::UI::GetSingleton()->IsShowingMenus() ? "shown" : "hidden");
 
 		RE::PlaySound("UIMenuCancel");
 	}
