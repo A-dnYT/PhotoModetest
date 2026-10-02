@@ -156,6 +156,15 @@ namespace PhotoMode::Hotkeys
 				continue;
 			}
 			const auto primary = static_cast<std::uint32_t>(combo->primary);
+			{
+				// diagnostics: everything the game reports as held when the hotkey's key is pressed (a key the game wrongly
+				// thinks is still held used to stop these hotkeys working)
+				std::string heldList;
+				for (const auto key : held) {
+					heldList += std::format("{} ", key);
+				}
+				REX::INFO("Open hotkey key {} pressed; keys the game reports as held: {}", primary, heldList);
+			}
 			if (combo->modifier >= 0) {
 				if (!held.contains(static_cast<std::uint32_t>(combo->modifier))) {
 					continue;  // the modifier has to be held before the key is pressed
