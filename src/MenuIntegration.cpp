@@ -163,6 +163,23 @@ namespace MenuIntegration
 		}
 	}
 
+	bool Manager::GetConsoleOpen() const
+	{
+		if (!consoleOpen) {
+			return false;
+		}
+		const auto UI = RE::UI::GetSingleton();
+		if (UI && !UI->IsMenuOpen(RE::Console::MENU_NAME)) {
+			// we saw the console open but never saw it close
+			if (!loggedStaleConsoleFlag) {
+				loggedStaleConsoleFlag = true;
+				REX::INFO("Console is closed but its close event was missed; not treating it as open");
+			}
+			return false;
+		}
+		return true;
+	}
+
 	EventResult Manager::ProcessEvent(const RE::MenuOpenCloseEvent* a_evn, RE::BSTEventSource<RE::MenuOpenCloseEvent>*)
 	{
 		if (!a_evn) {
@@ -171,6 +188,8 @@ namespace MenuIntegration
 
 		if (a_evn->menuName == RE::Console::MENU_NAME) {
 			consoleOpen = a_evn->opening;
+			loggedStaleConsoleFlag = false;
+			REX::INFO("Console {}", a_evn->opening ? "opened" : "closed");
 
 			const auto photoModeMgr = MANAGER(PhotoMode);
 

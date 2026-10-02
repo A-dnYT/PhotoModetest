@@ -81,7 +81,9 @@ namespace MenuIntegration
 
 		void UpdateListVisuals(RE::GFxMovieView* a_view, RE::GFxValue& a_listObj, std::uint32_t a_numItems);
 
-		bool GetConsoleOpen() const { return consoleOpen; }
+		// Whether the console is open. Uses the console open/close events and checks the game still has the console
+		// open, so a missed close event can't leave Photo Mode's hotkeys blocked for the rest of the session.
+		bool GetConsoleOpen() const;
 
 	private:
 		template <class F>
@@ -128,6 +130,7 @@ namespace MenuIntegration
 		bool skyUI6Installed{ false };
 		bool photoModeInjected{ false };
 		bool consoleOpen{ false };
+		mutable bool loggedStaleConsoleFlag{ false };
 	};
 
 	template <class F>
