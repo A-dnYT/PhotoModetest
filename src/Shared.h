@@ -2,7 +2,8 @@
 
 namespace Shared
 {
-	inline bool CanShowMenu()
+	// Why Photo Mode / the gallery can't be shown right now (empty when it can).
+	inline std::string GetMenuBlockReason()
 	{
 		static constexpr std::array badMenus{
 			RE::MainMenu::MENU_NAME,
@@ -14,24 +15,34 @@ namespace Shared
 		};
 
 		const auto UI = RE::UI::GetSingleton();
-		if (!UI || std::ranges::any_of(badMenus, [&](const auto& menuName) { return UI->IsMenuOpen(menuName); })) {
-			return false;
+		if (!UI) {
+			return "game UI not ready";
+		}
+		for (const auto& menuName : badMenus) {
+			if (UI->IsMenuOpen(menuName)) {
+				return std::format("{} is open", menuName);
+			}
 		}
 
 		const auto* controlMap = RE::ControlMap::GetSingleton();
 		if (!controlMap) {
-			return false;
+			return "controls not ready";
 		}
 
-		switch (controlMap->contextPriorityStack.back()) {
+		switch (const auto context = controlMap->contextPriorityStack.back()) {
 		case RE::UserEvents::INPUT_CONTEXT_ID::kGameplay:
 		case RE::UserEvents::INPUT_CONTEXT_ID::kTFCMode:
 		case RE::UserEvents::INPUT_CONTEXT_ID::kConsole:
 		case RE::UserEvents::INPUT_CONTEXT_ID::kCursor:
-			return true;
+			return {};
 		default:
-			return false;
+			return std::format("the game is in a menu or other non-gameplay controls (input context {})", static_cast<int>(context));
 		}
+	}
+
+	inline bool CanShowMenu()
+	{
+		return GetMenuBlockReason().empty();
 	}
 
 	inline ScreenshotIndex GetScreenshotIndex(const std::string& a_path)

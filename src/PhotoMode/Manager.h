@@ -22,6 +22,8 @@ namespace PhotoMode
 		void               Activate();
 		void               Deactivate();
 		void               ToggleActive();
+		// Why the Photo Mode hotkey can't open Photo Mode right now (empty when it can).
+		std::string GetOpenBlockReason();
 		void               Revert(bool a_deactivate = false);
 		void               QuitOnEscape();
 

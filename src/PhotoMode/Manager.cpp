@@ -210,11 +210,40 @@ namespace PhotoMode
 		RE::PlaySound("UIMenuCancel");
 	}
 
+	std::string Manager::GetOpenBlockReason()
+	{
+		if (auto reason = Shared::GetMenuBlockReason(); !reason.empty()) {
+			return reason;
+		}
+		if (RE::MenuControls::GetSingleton()->InBeastForm()) {
+			return "you are in beast form";
+		}
+		if (RE::VATS::GetSingleton()->mode == RE::VATS::VATS_MODE::kKillCam) {
+			return "a kill camera is playing";
+		}
+		if (MANAGER(Gallery)->IsActive()) {
+			return "the gallery is open";
+		}
+		if (MANAGER(MenuIntegration)->GetConsoleOpen()) {
+			return "the console is open";
+		}
+		return {};
+	}
+
 	void Manager::ToggleActive()
 	{
 		if (!IsActive()) {
 			if (CanShowMenu() && !ShouldBlockInput()) {
 				Activate();
+			} else {
+				// Say why, so it's clear the hotkey was seen (log always; on screen only when the game isn't paused in a menu)
+				const auto reason = GetOpenBlockReason();
+				REX::INFO("Photo Mode hotkey pressed, but Photo Mode can't open: {}", reason);
+				if (const auto UI = RE::UI::GetSingleton(); UI && !UI->GameIsPaused() && !MANAGER(MenuIntegration)->GetConsoleOpen()) {
+					static std::string message;  // kept alive in case the HUD keeps the pointer
+					message = std::format("Photo Mode can't open: {}", reason);
+					RE::SendHUDMessage::ShowHUDMessage(message.c_str());
+				}
 			}
 		} else {
 			if (!ImGui::GetIO().WantTextInput && !ShouldBlockInput()) {

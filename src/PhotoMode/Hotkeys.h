@@ -73,7 +73,10 @@ namespace PhotoMode::Hotkeys
 			bool                    IsInvalid() const;
 			std::set<std::uint32_t> GetKeys() const;
 
-			bool ProcessKeyPress(RE::InputEvent* const* a_event, std::function<void()> a_callback);
+			// Runs the callback when the combo's key is pressed (with its modifier, if it has one, already held).
+			// Other keys held at the same time (e.g. walking) don't stop it. A plain-key combo gives way to the
+			// sibling combo when that one is Modifier + the same key and its modifier is held.
+			bool ProcessKeyPress(RE::InputEvent* const* a_event, std::function<void()> a_callback, const KeyCombo* a_sibling = nullptr) const;
 
 		private:
 			struct KeyComboImpl
@@ -84,12 +87,15 @@ namespace PhotoMode::Hotkeys
 				std::int32_t modifier{ -1 };
 
 				std::set<std::uint32_t> keys{};
+
+				[[nodiscard]] bool IsModifierComboHeld(std::uint32_t a_primary, const std::set<std::uint32_t>& a_held) const
+				{
+					return primary >= 0 && modifier >= 0 && static_cast<std::uint32_t>(primary) == a_primary && a_held.contains(static_cast<std::uint32_t>(modifier));
+				}
 			};
 
 			KeyComboImpl keyboard;
 			KeyComboImpl gamePad;
-
-			bool triggered{ false };
 		} togglePhotoMode;
 
 		KeyCombo toggleGallery;

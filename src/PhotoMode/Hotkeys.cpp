@@ -37,7 +37,7 @@ namespace PhotoMode::Hotkeys
 
 		togglePhotoMode.ProcessKeyPress(a_event, []() {
 			MANAGER(PhotoMode)->ToggleActive();
-		});
+		}, &toggleGallery);
 	}
 
 	void Manager::ToggleGallery(RE::InputEvent* const* a_event)
@@ -48,7 +48,7 @@ namespace PhotoMode::Hotkeys
 
 		toggleGallery.ProcessKeyPress(a_event, []() {
 			MANAGER(Gallery)->ToggleActive();
-		});
+		}, &togglePhotoMode);
 	}
 
 	void Manager::Key::LoadKeys(const CSimpleIniA& a_ini, std::string_view a_setting)
@@ -118,43 +118,53 @@ namespace PhotoMode::Hotkeys
 		return (device == Input::DEVICE::kKeyboard || device == Input::DEVICE::kMouse) ? keyboard.keys : gamePad.keys;
 	}
 
-	bool Manager::KeyCombo::ProcessKeyPress(RE::InputEvent* const* a_event, std::function<void()> a_callback)
+	bool Manager::KeyCombo::ProcessKeyPress(RE::InputEvent* const* a_event, std::function<void()> a_callback, const KeyCombo* a_sibling) const
 	{
-		std::set<std::uint32_t> pressed;
+		// The game sends an event for every held button each frame, so this batch has everything that is held.
+		// The combo fires on the frame its key goes down (not while it stays held), whatever else is held.
+		std::set<std::uint32_t> held;
+		std::set<std::uint32_t> justPressed;
 
 		for (auto event = *a_event; event; event = event->next) {
 			const auto button = event->AsButtonEvent();
-			if (!button || !button->HasIDCode()) {
+			if (!button || !button->HasIDCode() || !button->IsPressed()) {
 				continue;
 			}
-			if (button->IsPressed()) {
-				auto key = button->GetIDCode();
-				switch (button->GetDevice()) {
-				case RE::INPUT_DEVICE::kKeyboard:
-					break;
-				case RE::INPUT_DEVICE::kMouse:
-					key += SKSE::InputMap::kMacro_MouseButtonOffset;
-					break;
-				case RE::INPUT_DEVICE::kGamepad:
-					key = SKSE::InputMap::GamepadMaskToKeycode(key);
-					break;
-				default:
+			auto key = button->GetIDCode();
+			switch (button->GetDevice()) {
+			case RE::INPUT_DEVICE::kKeyboard:
+				break;
+			case RE::INPUT_DEVICE::kMouse:
+				key += SKSE::InputMap::kMacro_MouseButtonOffset;
+				break;
+			case RE::INPUT_DEVICE::kGamepad:
+				key = SKSE::InputMap::GamepadMaskToKeycode(key);
+				break;
+			default:
+				continue;
+			}
+			held.insert(key);
+			if (button->IsDown()) {
+				justPressed.insert(key);
+			}
+		}
+
+		for (const auto* combo : { &keyboard, &gamePad }) {
+			if (combo->primary < 0 || !justPressed.contains(static_cast<std::uint32_t>(combo->primary))) {
+				continue;
+			}
+			const auto primary = static_cast<std::uint32_t>(combo->primary);
+			if (combo->modifier >= 0) {
+				if (!held.contains(static_cast<std::uint32_t>(combo->modifier))) {
 					continue;
 				}
-				pressed.insert(key);
+			} else if (a_sibling && (a_sibling->keyboard.IsModifierComboHeld(primary, held) || a_sibling->gamePad.IsModifierComboHeld(primary, held))) {
+				continue;  // e.g. Photo Mode on P and the gallery on Shift+P: Shift+P is the gallery's
 			}
+			a_callback();
+			return true;
 		}
-
-		if (!pressed.empty() && (pressed == keyboard.keys || pressed == gamePad.keys)) {
-			if (!triggered) {
-				triggered = true;
-				a_callback();
-			}
-		} else {
-			triggered = false;
-		}
-
-		return triggered;
+		return false;
 	}
 
 	std::uint32_t Manager::ResetKey() const
