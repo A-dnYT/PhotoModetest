@@ -662,6 +662,15 @@
           }
         },
         {
+          "id": "bShowGlobalTimeOnRelease:Controls",
+          "text": "$PM_ShowGlobalTimeOnRelease_Text",
+          "type": "toggle",
+          "help": "$PM_ShowGlobalTimeOnRelease_Help",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
           "text": "$PM_CameraMoveHotkeys_Header",
           "type": "header"
         },

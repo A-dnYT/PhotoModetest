@@ -199,6 +199,22 @@ namespace PhotoMode::AdjustHotkeys
 
 		bool smoothMode{ false };
 
+		// bShowGlobalTimeOnRelease: show the new Global Time Multiplier once its Increase / Decrease hotkeys are let go
+		bool showGlobalTimeOnRelease{ true };
+		bool globalTimeHeld{ false };
+
+		Control& GlobalTimeControl()
+		{
+			return *std::ranges::find_if(controls, [](const Control& a_control) { return std::string_view{ a_control.name } == "GlobalTime"; });
+		}
+
+		void ShowGlobalTime()
+		{
+			static std::string message;  // kept alive in case the HUD keeps the pointer
+			message = std::format("{}: {:.2f}x", TRANSLATE("$PM_GlobalTimeMult"), GetGlobalTime());
+			RE::SendHUDMessage::ShowHUDMessage(message.c_str());
+		}
+
 		std::map<std::uint32_t, Clock::time_point> pressedKeys;  // key -> last time an event said it was down
 		Clock::time_point                          lastUpdate{};
 
@@ -271,6 +287,14 @@ namespace PhotoMode::AdjustHotkeys
 				}
 				a_binding.active = nowActive;
 			});
+
+			// Global Time: report the value once both of its hotkeys have been let go
+			const auto& globalTime = GlobalTimeControl();
+			const bool  globalTimeNowHeld = globalTime.increase.active || globalTime.decrease.active;
+			if (globalTimeHeld && !globalTimeNowHeld && showGlobalTimeOnRelease) {
+				ShowGlobalTime();
+			}
+			globalTimeHeld = globalTimeNowHeld;
 		}
 
 		// Move the free camera up/down while the Camera Up/Down hotkeys are held.
@@ -306,6 +330,7 @@ namespace PhotoMode::AdjustHotkeys
 	void LoadSettings(const CSimpleIniA& a_ini)
 	{
 		smoothMode = a_ini.GetBoolValue("Controls", "bSmoothHotkeyAdjust", smoothMode);
+		showGlobalTimeOnRelease = a_ini.GetBoolValue("Controls", "bShowGlobalTimeOnRelease", showGlobalTimeOnRelease);
 		panMode = std::clamp(static_cast<std::int32_t>(a_ini.GetLongValue("Controls", "iPanCameraMode", panMode)), 0, 2);
 
 		for (auto& control : controls) {
@@ -520,6 +545,7 @@ namespace PhotoMode::AdjustHotkeys
 		});
 		primariesWithModifierHeld.clear();
 		pressedKeys.clear();
+		globalTimeHeld = false;  // closing / resetting Photo Mode doesn't count as letting go
 		ForEachBinding([](Control&, Binding& a_binding, float) {
 			a_binding.matched = nullptr;
 			a_binding.active = false;
