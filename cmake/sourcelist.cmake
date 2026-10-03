@@ -17,6 +17,7 @@ set(sources ${sources}
 	src/Papyrus.cpp
 	src/PhotoMode/Favorites.cpp
 	src/PhotoMode/AdjustHotkeys.cpp
+	src/PhotoMode/Toast.cpp
 	src/PhotoMode/CameraModes.cpp
 	src/PhotoMode/Hotkeys.cpp
 	src/PhotoMode/Manager.cpp

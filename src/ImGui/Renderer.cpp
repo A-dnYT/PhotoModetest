@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "PhotoMode/AdjustHotkeys.h"
 #include "PhotoMode/CameraModes.h"
+#include "PhotoMode/Toast.h"
 #include "IconsFonts.h"
 #include "Styles.h"
 
@@ -116,6 +117,7 @@ namespace ImGui::Renderer
 			RenderFrame([&] {
 				if (photoModeActive) {
 					photoMode->Draw();
+					::PhotoMode::Toast::Draw();
 				} else {
 					gallery->Draw();
 				}
@@ -147,12 +149,21 @@ namespace ImGui::Renderer
 				::PhotoMode::CameraModes::OnFrameUpdate();
 			}
 
-			if (!(photoMode->IsActive() && photoMode->IsHidden() && photoMode->HasOverlay())) {
+			// while the Photo Mode UI is hidden (HUDMenu::PostDisplay doesn't run): overlays and on-screen messages
+			if (!photoMode->IsActive() || !photoMode->IsHidden()) {
+				return;
+			}
+			const bool overlay = photoMode->HasOverlay();
+			const bool toast = ::PhotoMode::Toast::IsVisible();
+			if (!overlay && !toast) {
 				return;
 			}
 
 			RenderFrame([&] {
-				photoMode->DrawOverlays();
+				if (overlay) {
+					photoMode->DrawOverlays();
+				}
+				::PhotoMode::Toast::Draw();
 			});
 		}
 		static inline REL::Relocation<decltype(thunk)> func;

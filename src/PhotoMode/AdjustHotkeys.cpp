@@ -2,6 +2,7 @@
 
 #include "CameraModes.h"
 #include "Manager.h"
+#include "Toast.h"
 
 #include <algorithm>
 #include <array>
@@ -210,9 +211,8 @@ namespace PhotoMode::AdjustHotkeys
 
 		void ShowGlobalTime()
 		{
-			static std::string message;  // kept alive in case the HUD keeps the pointer
-			message = std::format("{}: {:.2f}x", TRANSLATE("$PM_GlobalTimeMult"), GetGlobalTime());
-			RE::SendHUDMessage::ShowHUDMessage(message.c_str());
+			// drawn by Photo Mode (not a HUD notification) so it shows while the menus are hidden, and goes quickly
+			Toast::Show(std::format("{}: {:.2f}x", TRANSLATE("$PM_GlobalTimeMult"), GetGlobalTime()));
 		}
 
 		std::map<std::uint32_t, Clock::time_point> pressedKeys;  // key -> last time an event said it was down

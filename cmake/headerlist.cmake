@@ -20,6 +20,7 @@ set(headers ${headers}
 	src/Papyrus.h
 	src/PhotoMode/Favorites.h
 	src/PhotoMode/AdjustHotkeys.h
+	src/PhotoMode/Toast.h
 	src/PhotoMode/CameraModes.h
 	src/PhotoMode/Hotkeys.h
 	src/PhotoMode/Manager.h

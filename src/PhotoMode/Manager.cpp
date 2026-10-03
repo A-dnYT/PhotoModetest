@@ -4,6 +4,7 @@
 #include "CameraModes.h"
 #include "Gallery/Manager.h"
 #include "Hotkeys.h"
+#include "Toast.h"
 #include "IGCSBridge/Bridge.h"  // IGCSDOF lifecycle + per-frame camera feed
 #include "ImGui/IconsFonts.h"
 #include "ImGui/Styles.h"
@@ -205,6 +206,7 @@ namespace PhotoMode
 		MANAGER(Input)->ResetInputDevices();
 
 		activated = false;
+		Toast::Clear();
 		if (activeGlobal) {
 			activeGlobal->value = 0.0f;
 		}
