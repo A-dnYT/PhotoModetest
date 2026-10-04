@@ -254,6 +254,29 @@ namespace PhotoMode::CameraModes
 			static inline constexpr std::size_t            idx{ 0x05 };  // TESCameraState::GetTranslation
 		};
 
+		// Photo Cam over a conversation: put the camera node on the free camera, in case a conversation camera mod
+		// places the camera itself.
+		void PinFreeCamera(RE::NiCamera* a_niCamera)
+		{
+			const auto camera = RE::PlayerCamera::GetSingleton();
+			const auto root = camera ? camera->cameraRoot.get() : nullptr;
+			if (!root || a_niCamera->parent != root || !camera->IsInFreeCameraMode()) {
+				return;
+			}
+			const auto freeCamera = static_cast<RE::FreeCameraState*>(camera->currentState.get());
+			if (!freeCamera) {
+				return;
+			}
+			RE::NiQuaternion rotation;
+			freeCamera->GetRotation(rotation);
+			RE::NiPoint3 translation;
+			freeCamera->GetTranslation(translation);  // through the IGCS hook, like the game
+			root->local.rotate = rotation.ToRotation();
+			root->world.rotate = root->local.rotate;
+			root->local.translate = translation;
+			root->world.translate = translation;
+		}
+
 		// The rendered position. PlayerCamera::Update isn't virtual (so it can't be hooked through the vtable) and the
 		// third-person states set the camera node's position themselves rather than through GetTranslation, so the
 		// position is pinned on the game's camera itself: whenever the world camera (the NiCamera under the player
@@ -263,7 +286,9 @@ namespace PhotoMode::CameraModes
 		{
 			static void thunk(RE::NiCamera* a_this, RE::NiUpdateData* a_data)
 			{
-				if (OverrideActive()) {
+				if (mode == kPhoto && MANAGER(PhotoMode)->IsActive() && MANAGER(PhotoMode)->IsOverConversation()) {
+					PinFreeCamera(a_this);
+				} else if (OverrideActive()) {
 					const auto camera = RE::PlayerCamera::GetSingleton();
 					const auto root = camera ? camera->cameraRoot.get() : nullptr;
 

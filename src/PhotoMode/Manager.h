@@ -50,7 +50,16 @@ namespace PhotoMode
 
 		bool IsCursorHoveringOverWindow() const;
 
+		// Photo Mode was opened during a conversation (Dialogue Menu): the conversation's menu controls are swapped
+		// for gameplay controls while Photo Mode is open, so the free camera and Photo Mode's controls work.
+		[[nodiscard]] bool IsOverConversation() const { return conversationContextIndex >= 0; }
+
 	private:
+		void TakeOverConversationControls();
+		void RestoreConversationControls();
+
+		std::int32_t conversationContextIndex{ -1 };  // where in the input context stack the conversation's entry is
+
 		enum TAB_TYPE : std::int8_t
 		{
 			kCamera,

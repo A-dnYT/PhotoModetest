@@ -24,7 +24,7 @@ namespace PhotoMode
 
 	bool Manager::CanShowMenu()
 	{
-		if (!Shared::CanShowMenu()) {
+		if (!Shared::GetMenuBlockReason(true).empty()) {  // a conversation on its own is fine
 			return false;
 		}
 
@@ -67,9 +67,49 @@ namespace PhotoMode
 		}
 	}
 
+	void Manager::TakeOverConversationControls()
+	{
+		conversationContextIndex = -1;
+		if (!Shared::IsOnlyInConversation()) {
+			return;
+		}
+		// The conversation put the game on menu controls (so keys select topics and the camera can't be flown).
+		// Swap that entry for gameplay controls while Photo Mode is open; RestoreConversationControls puts it back.
+		auto& stack = RE::ControlMap::GetSingleton()->contextPriorityStack;
+		conversationContextIndex = static_cast<std::int32_t>(stack.size()) - 1;
+		stack.back() = RE::UserEvents::INPUT_CONTEXT_ID::kGameplay;
+		REX::INFO("Photo Mode opened during a conversation: using gameplay controls until it closes");
+	}
+
+	void Manager::RestoreConversationControls()
+	{
+		if (conversationContextIndex < 0) {
+			return;
+		}
+		const auto index = static_cast<std::uint32_t>(conversationContextIndex);
+		conversationContextIndex = -1;
+
+		auto& stack = RE::ControlMap::GetSingleton()->contextPriorityStack;
+		if (index >= stack.size() || stack[index] != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay) {
+			REX::INFO("Conversation controls: the game already changed them, leaving them as they are");
+			return;
+		}
+		if (RE::UI::GetSingleton()->IsMenuOpen(RE::DialogueMenu::MENU_NAME)) {
+			stack[index] = RE::UserEvents::INPUT_CONTEXT_ID::kMenuMode;  // back to the conversation's controls
+			REX::INFO("Conversation controls restored");
+		} else if (index == stack.size() - 1) {
+			// the conversation ended while Photo Mode was open, and the game couldn't remove its entry (it was ours)
+			stack.pop_back();
+			REX::INFO("Conversation ended during Photo Mode: removed its controls entry");
+		}
+	}
+
 	void Manager::Activate()
 	{
 		RE::PlaySound("UIMenuOK");
+
+		// opened during a conversation: take over its controls (before entering the free camera)
+		TakeOverConversationControls();
 
 		cameraTab.GetOriginalState();
 		timeTab.GetOriginalState();
@@ -183,6 +223,9 @@ namespace PhotoMode
 			//RE::ControlMap::GetSingleton()->PopInputContext(RE::ControlMap::InputContextID::kTFCMode);
 		}
 
+		// back to the conversation's controls, if Photo Mode was opened during one
+		RestoreConversationControls();
+
 		// reset controls
 		allowTextInput = false;
 		RE::ControlMap::GetSingleton()->AllowTextInput(false);
@@ -221,7 +264,7 @@ namespace PhotoMode
 
 	std::string Manager::GetOpenBlockReason()
 	{
-		if (auto reason = Shared::GetMenuBlockReason(); !reason.empty()) {
+		if (auto reason = Shared::GetMenuBlockReason(true); !reason.empty()) {
 			return reason;
 		}
 		if (RE::MenuControls::GetSingleton()->InBeastForm()) {

@@ -1,5 +1,7 @@
 #include "Hooks.h"
 
+#include <chrono>
+
 #include "Gallery/Manager.h"
 #include "IGCSBridge/Bridge.h"  // IGCSDOF: direct IgcsConnector bridge
 #include "Input.h"
@@ -64,8 +66,33 @@ namespace PhotoMode
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
 
+	// While Photo Mode is open over a conversation, the conversation's menu doesn't get any input (keys and clicks
+	// are Photo Mode's; Escape closes Photo Mode, not the conversation).
+	struct MenuControlsInput
+	{
+		static RE::BSEventNotifyControl thunk(RE::MenuControls* a_this, RE::InputEvent* const* a_event, RE::BSTEventSource<RE::InputEvent*>* a_source)
+		{
+			// (and briefly after Photo Mode closes, so the key release that closed it doesn't also act in the conversation)
+			using Clock = std::chrono::steady_clock;
+			static Clock::time_point lastBlocked{};
+			const auto               now = Clock::now();
+			if (const auto photoMode = MANAGER(PhotoMode); photoMode->IsActive() && photoMode->IsOverConversation()) {
+				lastBlocked = now;
+				return RE::BSEventNotifyControl::kContinue;
+			}
+			if (lastBlocked != Clock::time_point{} && now - lastBlocked < std::chrono::milliseconds(200)) {
+				return RE::BSEventNotifyControl::kContinue;
+			}
+			return func(a_this, a_event, a_source);
+		}
+		static inline REL::Relocation<decltype(thunk)> func;
+		static inline constexpr std::size_t            idx{ 0x01 };  // BSTEventSink<InputEvent*>::ProcessEvent
+	};
+
 	void InstallHooks()
 	{
+		stl::write_vfunc<RE::MenuControls, MenuControlsInput>();
+
 		REL::Relocation<std::uintptr_t> getRot{ RELOCATION_ID(49814, 50744), 0x1B };  // FreeCamera::GetRotation
 		stl::write_thunk_call<FromEulerAnglesZXY>(getRot.address());
 		// IGCSDOF: intercept the rendered free-camera translation for aperture samples.

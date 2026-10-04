@@ -2,8 +2,39 @@
 
 namespace Shared
 {
+	// Whether a conversation (the Dialogue Menu) is the only thing holding the game in menu controls, so Photo Mode
+	// can open over it (e.g. with a conversation camera mod).
+	inline bool IsOnlyInConversation()
+	{
+		const auto UI = RE::UI::GetSingleton();
+		const auto controlMap = RE::ControlMap::GetSingleton();
+		if (!UI || !controlMap || controlMap->contextPriorityStack.empty() ||
+			controlMap->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kMenuMode ||
+			!UI->IsMenuOpen(RE::DialogueMenu::MENU_NAME)) {
+			return false;
+		}
+		// other menus that use the same menu controls (opened from or during the conversation)
+		static constexpr std::array otherMenus{
+			RE::MessageBoxMenu::MENU_NAME,
+			RE::TrainingMenu::MENU_NAME,
+			RE::TutorialMenu::MENU_NAME,
+			RE::SleepWaitMenu::MENU_NAME,
+			RE::LevelUpMenu::MENU_NAME,
+			RE::BookMenu::MENU_NAME,
+			RE::JournalMenu::MENU_NAME,
+			RE::TweenMenu::MENU_NAME,
+			RE::BarterMenu::MENU_NAME,
+			RE::GiftMenu::MENU_NAME,
+			RE::ContainerMenu::MENU_NAME,
+			RE::InventoryMenu::MENU_NAME,
+			RE::RaceSexMenu::MENU_NAME
+		};
+		return std::ranges::none_of(otherMenus, [&](const auto& a_name) { return UI->IsMenuOpen(a_name); });
+	}
+
 	// Why Photo Mode / the gallery can't be shown right now (empty when it can).
-	inline std::string GetMenuBlockReason()
+	// a_allowConversation: a conversation (Dialogue Menu) on its own doesn't stop it (Photo Mode).
+	inline std::string GetMenuBlockReason(bool a_allowConversation = false)
 	{
 		static constexpr std::array badMenus{
 			RE::MainMenu::MENU_NAME,
@@ -27,6 +58,9 @@ namespace Shared
 		const auto* controlMap = RE::ControlMap::GetSingleton();
 		if (!controlMap) {
 			return "controls not ready";
+		}
+		if (a_allowConversation && IsOnlyInConversation()) {
+			return {};
 		}
 
 		switch (const auto context = controlMap->contextPriorityStack.back()) {
