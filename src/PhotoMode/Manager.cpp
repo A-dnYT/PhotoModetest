@@ -4,6 +4,7 @@
 #include "CameraModes.h"
 #include "Gallery/Manager.h"
 #include "Hotkeys.h"
+#include "NearClip.h"
 #include "Toast.h"
 #include "IGCSBridge/Bridge.h"  // IGCSDOF lifecycle + per-frame camera feed
 #include "ImGui/IconsFonts.h"
@@ -20,6 +21,7 @@ namespace PhotoMode
 	{
 		freeCameraSpeed = static_cast<float>(a_ini.GetDoubleValue("Settings", "fFreeCameraTranslationSpeed", freeCameraSpeed));
 		freezeTimeOnStart = a_ini.GetBoolValue("Settings", "bFreezeTimeOnStart", freezeTimeOnStart);
+		NearClip::LoadSettings(a_ini);
 	}
 
 	bool Manager::CanShowMenu()
@@ -151,6 +153,7 @@ namespace PhotoMode
 		MANAGER(Input)->LoadDefaultKeys();
 
 		activated = true;
+		NearClip::OnActivate();
 		REX::INFO("Photo Mode opened (camera state {}, game menus {})", static_cast<std::uint32_t>(originalcameraState), menusAlreadyHidden ? "hidden" : "shown");
 		CameraModes::OnActivate();
 		// IGCSDOF: expose the native Photo Mode camera only while Photo Mode is active.
@@ -249,6 +252,7 @@ namespace PhotoMode
 		MANAGER(Input)->ResetInputDevices();
 
 		activated = false;
+		NearClip::OnDeactivate();
 		Toast::Clear();
 		if (activeGlobal) {
 			activeGlobal->value = 0.0f;

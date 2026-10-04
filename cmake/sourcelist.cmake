@@ -18,6 +18,7 @@ set(sources ${sources}
 	src/PhotoMode/Favorites.cpp
 	src/PhotoMode/AdjustHotkeys.cpp
 	src/PhotoMode/Toast.cpp
+	src/PhotoMode/NearClip.cpp
 	src/PhotoMode/CameraModes.cpp
 	src/PhotoMode/Hotkeys.cpp
 	src/PhotoMode/Manager.cpp

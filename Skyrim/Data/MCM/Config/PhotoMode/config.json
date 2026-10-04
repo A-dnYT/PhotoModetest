@@ -1520,6 +1520,19 @@
           }
         },
         {
+          "id": "fNearClipDistance:Settings",
+          "text": "$PM_NearClip",
+          "type": "slider",
+          "help": "$PM_NearClip_Help",
+          "valueOptions": {
+            "min": 0.5,
+            "max": 15.0,
+            "step": 0.5,
+            "formatString": "{1}",
+            "sourceType": "ModSettingFloat"
+          }
+        },
+        {
           "text": "$PM_ScreenshotsHeader",
           "type": "header"
         },

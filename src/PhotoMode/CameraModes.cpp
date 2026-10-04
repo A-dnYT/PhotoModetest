@@ -2,6 +2,7 @@
 
 #include "AdjustHotkeys.h"
 #include "Manager.h"
+#include "NearClip.h"
 
 #include <algorithm>
 #include <array>
@@ -286,6 +287,9 @@ namespace PhotoMode::CameraModes
 		{
 			static void thunk(RE::NiCamera* a_this, RE::NiUpdateData* a_data)
 			{
+				if (MANAGER(PhotoMode)->IsActive() && a_this == RE::Main::WorldRootCamera()) {
+					NearClip::Apply(a_this);
+				}
 				if (mode == kPhoto && MANAGER(PhotoMode)->IsActive() && MANAGER(PhotoMode)->IsOverConversation()) {
 					PinFreeCamera(a_this);
 				} else if (OverrideActive()) {

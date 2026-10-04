@@ -3,6 +3,7 @@
 #include "ImGui/Widgets.h"
 #include "PhotoMode/AdjustHotkeys.h"
 #include "PhotoMode/CameraModes.h"
+#include "PhotoMode/NearClip.h"
 
 namespace PhotoMode
 {
@@ -47,6 +48,8 @@ namespace PhotoMode
 		// revert view roll
 		currentViewRoll = 0.0f;
 
+		NearClip::ResetToDefault();
+
 		// revert grid
 		CameraGrid::gridType = CameraGrid::GridType::kDisabled;
 
@@ -75,6 +78,9 @@ namespace PhotoMode
 		ImGui::Slider("$PM_TranslateSpeed"_T,
 			&FreeCamera::translateSpeed,  // fFreeCameraTranslationSpeed:Camera
 			0.1f, 50.0f);
+
+		// how close the camera gets to things before they are cut off
+		ImGui::Slider("$PM_NearClip"_T, &NearClip::Value(), NearClip::kMin, NearClip::kMax);
 
 		/*if (ENB::IsEnabled()) {
 			lastDOF = curDOF;
