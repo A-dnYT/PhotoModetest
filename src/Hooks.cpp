@@ -91,7 +91,11 @@ namespace PhotoMode
 
 	void InstallHooks()
 	{
-		stl::write_vfunc<RE::MenuControls, MenuControlsInput>();
+		{
+			// (this CommonLib's MenuControls has no VTABLE member, so use the vtable ID directly)
+			REL::Relocation<std::uintptr_t> vtbl{ RE::VTABLE_MenuControls[0] };
+			MenuControlsInput::func = vtbl.write_vfunc(MenuControlsInput::idx, MenuControlsInput::thunk);
+		}
 
 		REL::Relocation<std::uintptr_t> getRot{ RELOCATION_ID(49814, 50744), 0x1B };  // FreeCamera::GetRotation
 		stl::write_thunk_call<FromEulerAnglesZXY>(getRot.address());
