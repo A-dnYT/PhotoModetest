@@ -575,6 +575,10 @@ namespace PhotoMode::CameraModes
 
 		REX::INFO("[CameraModes] switch {} -> {} (camera state before: {})", static_cast<std::uint32_t>(mode), static_cast<std::uint32_t>(a_mode), StateName(camera));
 
+		// entering / leaving the free camera sets the game's freeze time; switching modes keeps it as it was
+		auto&      freezeTime = RE::Main::GetSingleton()->freezeTime;
+		const bool timeWasFrozen = freezeTime;
+
 		if (mode == kPhoto) {
 			// Photo Cam -> cinematic: keep the camera where it is, hand the player camera back to the player
 			CaptureFreeCameraPose();
@@ -593,6 +597,8 @@ namespace PhotoMode::CameraModes
 			ApplyPendingFreeCameraPose();
 		}
 		// cinematic -> cinematic: same camera position, just different behaviour
+
+		freezeTime = timeWasFrozen;
 
 		REX::INFO("[CameraModes]   camera state after switching: {}", StateName(camera));
 
