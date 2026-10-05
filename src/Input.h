@@ -41,6 +41,9 @@ namespace Input
 
 		void ProcessGalleryEvents(RE::InputEvent* const* a_evn);
 
+		// Hand Photo Mode input events directly (used for controller input that the game doesn't get, see Hooks.cpp).
+		void ProcessPhotoModeEvents(RE::InputEvent* const* a_evn) { ProcessEvent(a_evn, nullptr); }
+
 	private:
 		bool                             SetInputDevice(RE::INPUT_DEVICE a_device);
 		bool                             GetHotKey(RE::INPUT_DEVICE a_device, std::uint32_t& a_hotkey) const;

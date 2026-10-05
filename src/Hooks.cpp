@@ -1,6 +1,8 @@
 #include "Hooks.h"
 
 #include <chrono>
+#include <set>
+#include <vector>
 
 #include "Gallery/Manager.h"
 #include "IGCSBridge/Bridge.h"  // IGCSDOF: direct IgcsConnector bridge
@@ -187,6 +189,52 @@ namespace LoadScreen
 
 namespace Input
 {
+	// Freeze / Release / Follow Cam: the controller is Photo Mode's (camera, hotkeys) and the game doesn't get it at all,
+	// so it can't also make the player sprint, switch the game to controller mode (e.g. Auto Input Switch, which changes
+	// how keyboard movement behaves), etc. Photo Mode is handed the controller events itself.
+	// The game still gets the release of anything it saw pressed before (and a stick going back to centre), so nothing
+	// stays held when the mode is left.
+	namespace ControllerToPhotoMode
+	{
+		std::set<std::uint32_t> gameHeldButtons;  // controller buttons the game last saw pressed
+		bool                    gameStickOff[2]{ true, true };  // left / right stick last seen by the game was centred
+
+		bool ShouldFilter()
+		{
+			const auto photoMode = MANAGER(PhotoMode);
+			return photoMode->IsActive() && PhotoMode::CameraModes::IsCinematic() && !photoMode->ShouldBlockInput();
+		}
+
+		// whether the game should get this controller event, keeping track of what it has seen
+		bool GameGets(RE::InputEvent* a_event, bool a_filtering)
+		{
+			if (const auto button = a_event->AsButtonEvent()) {
+				const auto id = button->GetIDCode();
+				const bool pressed = button->IsPressed();
+				if (a_filtering && !gameHeldButtons.contains(id)) {
+					return false;  // the game didn't see it pressed: a new press (or its release) while the controller is Photo Mode's
+				}
+				if (pressed) {
+					gameHeldButtons.insert(id);
+				} else {
+					gameHeldButtons.erase(id);
+				}
+				return true;
+			}
+			if (a_event->GetEventType() == RE::INPUT_EVENT_TYPE::kThumbstick) {
+				const auto stick = static_cast<RE::ThumbstickEvent*>(a_event);
+				const auto index = stick->IsRight() ? 1 : 0;
+				const bool off = stick->xValue == 0.0f && stick->yValue == 0.0f;
+				if (a_filtering && !(off && !gameStickOff[index])) {
+					return false;  // only the return to centre, if the game still thinks it's pushed
+				}
+				gameStickOff[index] = off;
+				return true;
+			}
+			return !a_filtering;
+		}
+	}
+
 	struct ProcessInputQueue
 	{
 		static void thunk(RE::BSInputDeviceManager* a_deviceManager, RE::InputEvent* const* a_events)
@@ -195,8 +243,71 @@ namespace Input
 				MANAGER(Input)->ProcessGalleryEvents(a_events);
 				constexpr RE::InputEvent* const dummy[] = { nullptr };
 				func(a_deviceManager, dummy);
-			} else {
+				return;
+			}
+			if (!a_events || !*a_events) {
 				func(a_deviceManager, a_events);
+				return;
+			}
+
+			using namespace ControllerToPhotoMode;
+			const bool filtering = ShouldFilter();
+
+			// remember the list so it can be put back exactly
+			std::vector<std::pair<RE::InputEvent*, RE::InputEvent*>> links;
+			for (auto event = *a_events; event; event = event->next) {
+				links.emplace_back(event, event->next);
+			}
+
+			const auto relink = [&](auto&& a_keep) {
+				RE::InputEvent* head = nullptr;
+				RE::InputEvent* tail = nullptr;
+				for (const auto& [event, next] : links) {
+					if (!a_keep(event)) {
+						continue;
+					}
+					(tail ? tail->next : head) = event;
+					tail = event;
+				}
+				if (tail) {
+					tail->next = nullptr;
+				}
+				return head;
+			};
+
+			if (!filtering) {
+				// keep track of what the game sees from the controller, then hand everything over as usual
+				for (const auto& [event, next] : links) {
+					if (event->GetDevice() == RE::INPUT_DEVICE::kGamepad) {
+						GameGets(event, false);
+					}
+				}
+				func(a_deviceManager, a_events);
+				return;
+			}
+
+			// 1. Photo Mode gets the controller events directly
+			if (const auto controller = relink([](RE::InputEvent* a_event) { return a_event->GetDevice() == RE::INPUT_DEVICE::kGamepad; })) {
+				MANAGER(Input)->ProcessPhotoModeEvents(&controller);
+			}
+
+			// 2. the game (and Photo Mode, as a listener) gets everything else, plus controller releases it needs
+			std::set<RE::InputEvent*> forGame;
+			for (const auto& [event, next] : links) {
+				if (event->GetDevice() != RE::INPUT_DEVICE::kGamepad || GameGets(event, true)) {
+					forGame.insert(event);
+				}
+			}
+			const auto gameHead = relink([&](RE::InputEvent* a_event) { return forGame.contains(a_event); });
+			if (gameHead) {
+				func(a_deviceManager, &gameHead);
+			} else {
+				constexpr RE::InputEvent* const dummy[] = { nullptr };
+				func(a_deviceManager, dummy);
+			}
+
+			for (const auto& [event, next] : links) {
+				event->next = next;
 			}
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
