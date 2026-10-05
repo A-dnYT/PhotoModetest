@@ -112,11 +112,15 @@ namespace PhotoMode::AdjustHotkeys
 		void SwitchToReleaseCam() { CameraModes::SetMode(CameraModes::kRelease); }
 		void SwitchToFollowCam() { CameraModes::SetMode(CameraModes::kFollow); }
 
+		void ToggleFollowsPlayerOnFreeze() { CameraModes::ToggleCarryWithPlayer(CameraModes::kFreeze); }
+		void ToggleFollowsPlayerOnRelease() { CameraModes::ToggleCarryWithPlayer(CameraModes::kRelease); }
+		void ToggleFollowsPlayerOnFollow() { CameraModes::ToggleCarryWithPlayer(CameraModes::kFollow); }
+
 		float GetGlobalTime() { return RE::BSTimer::QGlobalTimeMultiplier(); }
 		void  SetGlobalTime(float a_value) { RE::BSTimer::GetSingleton()->SetGlobalTimeMultiplier(a_value, true); }
 
 		// ranges match the sliders on the Camera and Time tabs
-		std::array<Control, 18> controls{ {
+		std::array<Control, 21> controls{ {
 			{ "FOV", 1.0f, 30.0f, 5.0f, 150.0f, GetFOV, SetFOV,
 				{ { 78, kNone }, { kNone, kNone } },     // Numpad +
 				{ { 74, kNone }, { kNone, kNone } } },   // Numpad -
@@ -160,6 +164,10 @@ namespace PhotoMode::AdjustHotkeys
 			{ "FreezeCam", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", SwitchToFreezeCam },
 			{ "ReleaseCam", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", SwitchToReleaseCam },
 			{ "FollowCam", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", SwitchToFollowCam },
+			// "Camera Moves With Player" toggles (iCameraFollowsPlayerOn<Mode>Key / GamePad + Modifier); unbound by default
+			{ "CameraFollowsPlayerOnFreeze", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", ToggleFollowsPlayerOnFreeze },
+			{ "CameraFollowsPlayerOnRelease", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", ToggleFollowsPlayerOnRelease },
+			{ "CameraFollowsPlayerOnFollow", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", ToggleFollowsPlayerOnFollow },
 			// level movement (iLevelMoveKey / iLevelMoveGamePad + Modifier): while held, moving forward / back stays horizontal; unbound by default
 			{ "LevelMove", 0.0f, 0.0f, 0.0f, 0.0f, nullptr, nullptr, {}, {}, false, "", "", nullptr, false, false, false, true },
 		} };

@@ -46,6 +46,10 @@ namespace PhotoMode::CameraModes
 	// Switch to a mode (no toggling: switching to the current mode does nothing).
 	void SetMode(Mode a_mode);
 
+	// Flip "Camera Moves With Player" for a cinematic mode (hotkeys). Lasts until the settings are next loaded
+	// (the menu's setting applies again after loading a game or closing the mod's menu). Shows the new state on screen.
+	void ToggleCarryWithPlayer(Mode a_mode);
+
 	// Sticks for Release Cam panning / camera movement (called for every input event while Photo Mode is open).
 	void OnInputEvent(const RE::InputEvent* a_event);
 

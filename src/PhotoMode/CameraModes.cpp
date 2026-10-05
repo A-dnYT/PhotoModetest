@@ -3,6 +3,7 @@
 #include "AdjustHotkeys.h"
 #include "Manager.h"
 #include "NearClip.h"
+#include "Toast.h"
 
 #include <algorithm>
 #include <array>
@@ -613,6 +614,31 @@ namespace PhotoMode::CameraModes
 		gameUpHeld = false;
 		gameDownHeld = false;
 		RE::SendHUDMessage::ShowHUDMessage(TRANSLATE(modeNames[a_mode]));
+	}
+
+	void ToggleCarryWithPlayer(Mode a_mode)
+	{
+		bool* setting = nullptr;
+		switch (a_mode) {
+		case kFreeze:
+			setting = &carryWithPlayerOnFreeze;
+			break;
+		case kRelease:
+			setting = &carryWithPlayerOnRelease;
+			break;
+		case kFollow:
+			setting = &carryWithPlayerOnFollow;
+			break;
+		default:
+			return;
+		}
+		*setting = !*setting;
+		if (mode == a_mode) {
+			lastPlayerPositionValid = false;  // start carrying from where the player is now
+		}
+
+		static constexpr std::array labels{ "", "$PM_CameraFollowsPlayerOnFreeze_Text", "$PM_CameraFollowsPlayerOnRelease_Text", "$PM_CameraFollowsPlayerOnFollow_Text" };
+		Toast::Show(std::format("{}: {}", TRANSLATE(labels[a_mode]), *setting ? "On" : "Off"));
 	}
 
 	void OnInputEvent(const RE::InputEvent* a_event)

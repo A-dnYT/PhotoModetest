@@ -1225,6 +1225,66 @@
           }
         },
         {
+          "id": "iCameraFollowsPlayerOnFreezeKey:Controls",
+          "text": "$PM_CameraFollowsPlayerOnFreezeKey_Text",
+          "help": "$PM_CameraFollowsPlayerKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraFollowsPlayerOnFreezeKeyModifier:Controls",
+          "text": "$PM_CameraFollowsPlayerOnFreezeModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraFollowsPlayerOnReleaseKey:Controls",
+          "text": "$PM_CameraFollowsPlayerOnReleaseKey_Text",
+          "help": "$PM_CameraFollowsPlayerKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraFollowsPlayerOnReleaseKeyModifier:Controls",
+          "text": "$PM_CameraFollowsPlayerOnReleaseModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraFollowsPlayerOnFollowKey:Controls",
+          "text": "$PM_CameraFollowsPlayerOnFollowKey_Text",
+          "help": "$PM_CameraFollowsPlayerKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraFollowsPlayerOnFollowKeyModifier:Controls",
+          "text": "$PM_CameraFollowsPlayerOnFollowModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
           "text": "$PM_ReleaseCamSettings_Header",
           "type": "header"
         },
@@ -1362,6 +1422,70 @@
         {
           "id": "iFollowCamGamePadModifier:Controls",
           "text": "$PM_CameraMode_FollowModifier",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "text": "$PM_CameraFollowsPlayerHotkeysGamepad_Header",
+          "type": "header"
+        },
+        {
+          "id": "iCameraFollowsPlayerOnFreezeGamePad:Controls",
+          "text": "$PM_CameraFollowsPlayerOnFreezeKey_Text",
+          "help": "$PM_CameraFollowsPlayerKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraFollowsPlayerOnFreezeGamePadModifier:Controls",
+          "text": "$PM_CameraFollowsPlayerOnFreezeModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraFollowsPlayerOnReleaseGamePad:Controls",
+          "text": "$PM_CameraFollowsPlayerOnReleaseKey_Text",
+          "help": "$PM_CameraFollowsPlayerKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraFollowsPlayerOnReleaseGamePadModifier:Controls",
+          "text": "$PM_CameraFollowsPlayerOnReleaseModifier_Text",
+          "help": "$PM_AdjustModifier_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraFollowsPlayerOnFollowGamePad:Controls",
+          "text": "$PM_CameraFollowsPlayerOnFollowKey_Text",
+          "help": "$PM_CameraFollowsPlayerKey_Help",
+          "type": "keymap",
+          "ignoreConflicts": true,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "iCameraFollowsPlayerOnFollowGamePadModifier:Controls",
+          "text": "$PM_CameraFollowsPlayerOnFollowModifier_Text",
           "help": "$PM_AdjustModifier_Help",
           "type": "keymap",
           "ignoreConflicts": true,
