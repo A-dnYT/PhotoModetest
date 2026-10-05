@@ -176,6 +176,27 @@ namespace PhotoMode
 		}
 	}
 
+	// Every frame while Photo Mode is open. In Photo Cam the player is left alone (attack, sneak, jump, ... off, as
+	// before); in Freeze / Release / Follow Cam the player is controlled with keyboard & mouse, so their attack / block,
+	// sneak, ready weapon, shout, auto-move, jump and activate work. The game's menus stay off in every mode.
+	void Manager::UpdatePlayerControls()
+	{
+		const bool playerControlled = CameraModes::IsCinematic();
+		const auto controlMap = RE::ControlMap::GetSingleton();
+
+		using Flag = RE::ControlMap::UEFlag;
+		controlMap->ToggleControls(Flag::kMenu, false, true);
+		controlMap->ToggleControls(static_cast<Flag>(std::to_underlying(Flag::kActivate) | std::to_underlying(Flag::kJumping)), playerControlled, true);
+
+		if (const auto pcControls = RE::PlayerControls::GetSingleton()) {
+			pcControls->readyWeaponHandler->SetInputEventHandlingEnabled(playerControlled);
+			pcControls->sneakHandler->SetInputEventHandlingEnabled(playerControlled);
+			pcControls->autoMoveHandler->SetInputEventHandlingEnabled(playerControlled);
+			pcControls->shoutHandler->SetInputEventHandlingEnabled(playerControlled);
+			pcControls->attackBlockHandler->SetInputEventHandlingEnabled(playerControlled);
+		}
+	}
+
 	bool Manager::OnFrameUpdate()
 	{
 		if (!CanShowMenu()) {
@@ -194,7 +215,7 @@ namespace PhotoMode
 			allowTextInput = false;
 			RE::ControlMap::GetSingleton()->AllowTextInput(false);
 		}
-		TogglePlayerControls(false);
+		UpdatePlayerControls();
 
 		timeTab.OnFrameUpdate();
 		// IGCSDOF: publish the live camera packet and reconnect if the addon appears late.

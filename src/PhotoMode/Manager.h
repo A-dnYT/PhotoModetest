@@ -89,6 +89,7 @@ namespace PhotoMode
 		static constexpr std::array tabResetNotifs = { "$PM_ResetNotifCamera", "$PM_ResetNotifTime", "$PM_ResetNotifPlayer", "$PM_ResetNotifFilters", "$PM_ResetNotifOverlays" };
 
 		static void TogglePlayerControls(bool a_enable);
+		static void UpdatePlayerControls();
 
 		void               DrawControls();
 		void               DrawBar() const;
